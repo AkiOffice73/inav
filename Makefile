@@ -5,7 +5,7 @@
 # this stuff is worth it, you can buy me a beer in return
 ###############################################################################
 #
-# Makefile for building the iNav firmware.
+# Makefile for building the XFlight(iNav) firmware.
 #
 # Invoke this with 'make help' to see the list of supported targets.
 #
@@ -16,7 +16,7 @@
 #
 
 # The target to build, see VALID_TARGETS below
-TARGET    ?= NAZE
+TARGET    ?= SPRACINGF3
 
 # Compile-time options
 OPTIONS   ?=
@@ -41,7 +41,7 @@ FLASH_SIZE ?=
 # Things that need to be maintained as the source changes
 #
 
-FORKNAME      = inav
+FORKNAME      = XFlight
 
 # Working directories
 ROOT            := $(patsubst %/,%,$(dir $(lastword $(MAKEFILE_LIST))))

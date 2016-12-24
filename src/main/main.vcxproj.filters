@@ -1,0 +1,1218 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="原始程式檔">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="標頭檔">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hh;hpp;hxx;hm;inl;inc;xsd</Extensions>
+    </Filter>
+    <Filter Include="資源檔">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="blackbox\blackbox.c">
+      <Filter>原始程式檔</Filter>
+    </ClCompile>
+    <ClCompile Include="blackbox\blackbox_io.c">
+      <Filter>原始程式檔</Filter>
+    </ClCompile>
+    <ClCompile Include="build\assert.c">
+      <Filter>原始程式檔</Filter>
+    </ClCompile>
+    <ClCompile Include="build\build_config.c">
+      <Filter>原始程式檔</Filter>
+    </ClCompile>
+    <ClCompile Include="build\debug.c">
+      <Filter>原始程式檔</Filter>
+    </ClCompile>
+    <ClCompile Include="build\version.c">
+      <Filter>原始程式檔</Filter>
+    </ClCompile>
+    <ClCompile Include="common\colorconversion.c">
+      <Filter>原始程式檔</Filter>
+    </ClCompile>
+    <ClCompile Include="common\encoding.c">
+      <Filter>原始程式檔</Filter>
+    </ClCompile>
+    <ClCompile Include="common\filter.c">
+      <Filter>原始程式檔</Filter>
+    </ClCompile>
+    <ClCompile Include="common\maths.c">
+      <Filter>原始程式檔</Filter>
+    </ClCompile>
+    <ClCompile Include="common\printf.c">
+      <Filter>原始程式檔</Filter>
+    </ClCompile>
+    <ClCompile Include="common\streambuf.c">
+      <Filter>原始程式檔</Filter>
+    </ClCompile>
+    <ClCompile Include="common\typeconversion.c">
+      <Filter>原始程式檔</Filter>
+    </ClCompile>
+    <ClCompile Include="config\config.c">
+      <Filter>原始程式檔</Filter>
+    </ClCompile>
+    <ClCompile Include="config\config_eeprom.c">
+      <Filter>原始程式檔</Filter>
+    </ClCompile>
+    <ClCompile Include="config\feature.c">
+      <Filter>原始程式檔</Filter>
+    </ClCompile>
+    <ClCompile Include="config\parameter_group.c">
+      <Filter>原始程式檔</Filter>
+    </ClCompile>
+    <ClCompile Include="drivers\accgyro_adxl345.c">
+      <Filter>原始程式檔</Filter>
+    </ClCompile>
+    <ClCompile Include="drivers\accgyro_bma280.c">
+      <Filter>原始程式檔</Filter>
+    </ClCompile>
+    <ClCompile Include="drivers\accgyro_fake.c">
+      <Filter>原始程式檔</Filter>
+    </ClCompile>
+    <ClCompile Include="drivers\accgyro_l3g4200d.c">
+      <Filter>原始程式檔</Filter>
+    </ClCompile>
+    <ClCompile Include="drivers\accgyro_l3gd20.c">
+      <Filter>原始程式檔</Filter>
+    </ClCompile>
+    <ClCompile Include="drivers\accgyro_lsm303dlhc.c">
+      <Filter>原始程式檔</Filter>
+    </ClCompile>
+    <ClCompile Include="drivers\accgyro_mma845x.c">
+      <Filter>原始程式檔</Filter>
+    </ClCompile>
+    <ClCompile Include="drivers\accgyro_mpu.c">
+      <Filter>原始程式檔</Filter>
+    </ClCompile>
+    <ClCompile Include="drivers\accgyro_mpu3050.c">
+      <Filter>原始程式檔</Filter>
+    </ClCompile>
+    <ClCompile Include="drivers\accgyro_mpu6050.c">
+      <Filter>原始程式檔</Filter>
+    </ClCompile>
+    <ClCompile Include="drivers\accgyro_mpu6500.c">
+      <Filter>原始程式檔</Filter>
+    </ClCompile>
+    <ClCompile Include="drivers\accgyro_spi_mpu6000.c">
+      <Filter>原始程式檔</Filter>
+    </ClCompile>
+    <ClCompile Include="drivers\accgyro_spi_mpu6500.c">
+      <Filter>原始程式檔</Filter>
+    </ClCompile>
+    <ClCompile Include="drivers\accgyro_spi_mpu9250.c">
+      <Filter>原始程式檔</Filter>
+    </ClCompile>
+    <ClCompile Include="drivers\adc.c">
+      <Filter>原始程式檔</Filter>
+    </ClCompile>
+    <ClCompile Include="drivers\adc_stm32f10x.c">
+      <Filter>原始程式檔</Filter>
+    </ClCompile>
+    <ClCompile Include="drivers\adc_stm32f30x.c">
+      <Filter>原始程式檔</Filter>
+    </ClCompile>
+    <ClCompile Include="drivers\adc_stm32f4xx.c">
+      <Filter>原始程式檔</Filter>
+    </ClCompile>
+    <ClCompile Include="drivers\barometer_bmp085.c">
+      <Filter>原始程式檔</Filter>
+    </ClCompile>
+    <ClCompile Include="drivers\barometer_bmp280.c">
+      <Filter>原始程式檔</Filter>
+    </ClCompile>
+    <ClCompile Include="drivers\barometer_fake.c">
+      <Filter>原始程式檔</Filter>
+    </ClCompile>
+    <ClCompile Include="drivers\barometer_ms5611.c">
+      <Filter>原始程式檔</Filter>
+    </ClCompile>
+    <ClCompile Include="drivers\barometer_spi_bmp280.c">
+      <Filter>原始程式檔</Filter>
+    </ClCompile>
+    <ClCompile Include="drivers\buf_writer.c">
+      <Filter>原始程式檔</Filter>
+    </ClCompile>
+    <ClCompile Include="drivers\bus_i2c_soft.c">
+      <Filter>原始程式檔</Filter>
+    </ClCompile>
+    <ClCompile Include="drivers\bus_i2c_stm32f10x.c">
+      <Filter>原始程式檔</Filter>
+    </ClCompile>
+    <ClCompile Include="drivers\bus_i2c_stm32f30x.c">
+      <Filter>原始程式檔</Filter>
+    </ClCompile>
+    <ClCompile Include="drivers\bus_spi.c">
+      <Filter>原始程式檔</Filter>
+    </ClCompile>
+    <ClCompile Include="drivers\bus_spi_soft.c">
+      <Filter>原始程式檔</Filter>
+    </ClCompile>
+    <ClCompile Include="drivers\compass_ak8963.c">
+      <Filter>原始程式檔</Filter>
+    </ClCompile>
+    <ClCompile Include="drivers\compass_ak8975.c">
+      <Filter>原始程式檔</Filter>
+    </ClCompile>
+    <ClCompile Include="drivers\compass_fake.c">
+      <Filter>原始程式檔</Filter>
+    </ClCompile>
+    <ClCompile Include="drivers\compass_hmc5883l.c">
+      <Filter>原始程式檔</Filter>
+    </ClCompile>
+    <ClCompile Include="drivers\compass_mag3110.c">
+      <Filter>原始程式檔</Filter>
+    </ClCompile>
+    <ClCompile Include="drivers\display_ug2864hsweg01.c">
+      <Filter>原始程式檔</Filter>
+    </ClCompile>
+    <ClCompile Include="drivers\dma.c">
+      <Filter>原始程式檔</Filter>
+    </ClCompile>
+    <ClCompile Include="drivers\dma_stm32f4xx.c">
+      <Filter>原始程式檔</Filter>
+    </ClCompile>
+    <ClCompile Include="drivers\exti.c">
+      <Filter>原始程式檔</Filter>
+    </ClCompile>
+    <ClCompile Include="drivers\flash_m25p16.c">
+      <Filter>原始程式檔</Filter>
+    </ClCompile>
+    <ClCompile Include="drivers\gpio_stm32f10x.c">
+      <Filter>原始程式檔</Filter>
+    </ClCompile>
+    <ClCompile Include="drivers\gpio_stm32f30x.c">
+      <Filter>原始程式檔</Filter>
+    </ClCompile>
+    <ClCompile Include="drivers\gpio_stm32f4xx.c">
+      <Filter>原始程式檔</Filter>
+    </ClCompile>
+    <ClCompile Include="drivers\gps_i2cnav.c">
+      <Filter>原始程式檔</Filter>
+    </ClCompile>
+    <ClCompile Include="drivers\gyro_sync.c">
+      <Filter>原始程式檔</Filter>
+    </ClCompile>
+    <ClCompile Include="drivers\inverter.c">
+      <Filter>原始程式檔</Filter>
+    </ClCompile>
+    <ClCompile Include="drivers\io.c">
+      <Filter>原始程式檔</Filter>
+    </ClCompile>
+    <ClCompile Include="drivers\io_pca9685.c">
+      <Filter>原始程式檔</Filter>
+    </ClCompile>
+    <ClCompile Include="drivers\light_led.c">
+      <Filter>原始程式檔</Filter>
+    </ClCompile>
+    <ClCompile Include="drivers\light_led_stm32f10x.c">
+      <Filter>原始程式檔</Filter>
+    </ClCompile>
+    <ClCompile Include="drivers\light_led_stm32f30x.c">
+      <Filter>原始程式檔</Filter>
+    </ClCompile>
+    <ClCompile Include="drivers\light_ws2811strip.c">
+      <Filter>原始程式檔</Filter>
+    </ClCompile>
+    <ClCompile Include="drivers\light_ws2811strip_stm32f10x.c">
+      <Filter>原始程式檔</Filter>
+    </ClCompile>
+    <ClCompile Include="drivers\light_ws2811strip_stm32f30x.c">
+      <Filter>原始程式檔</Filter>
+    </ClCompile>
+    <ClCompile Include="drivers\light_ws2811strip_stm32f4xx.c">
+      <Filter>原始程式檔</Filter>
+    </ClCompile>
+    <ClCompile Include="drivers\logging.c">
+      <Filter>原始程式檔</Filter>
+    </ClCompile>
+    <ClCompile Include="drivers\pitotmeter_fake.c">
+      <Filter>原始程式檔</Filter>
+    </ClCompile>
+    <ClCompile Include="drivers\pitotmeter_ms4525.c">
+      <Filter>原始程式檔</Filter>
+    </ClCompile>
+    <ClCompile Include="drivers\pwm_mapping.c">
+      <Filter>原始程式檔</Filter>
+    </ClCompile>
+    <ClCompile Include="drivers\pwm_output.c">
+      <Filter>原始程式檔</Filter>
+    </ClCompile>
+    <ClCompile Include="drivers\pwm_rx.c">
+      <Filter>原始程式檔</Filter>
+    </ClCompile>
+    <ClCompile Include="drivers\rcc.c">
+      <Filter>原始程式檔</Filter>
+    </ClCompile>
+    <ClCompile Include="drivers\rx_nrf24l01.c">
+      <Filter>原始程式檔</Filter>
+    </ClCompile>
+    <ClCompile Include="drivers\rx_spi.c">
+      <Filter>原始程式檔</Filter>
+    </ClCompile>
+    <ClCompile Include="drivers\rx_xn297.c">
+      <Filter>原始程式檔</Filter>
+    </ClCompile>
+    <ClCompile Include="drivers\sdcard.c">
+      <Filter>原始程式檔</Filter>
+    </ClCompile>
+    <ClCompile Include="drivers\sdcard_standard.c">
+      <Filter>原始程式檔</Filter>
+    </ClCompile>
+    <ClCompile Include="drivers\serial.c">
+      <Filter>原始程式檔</Filter>
+    </ClCompile>
+    <ClCompile Include="drivers\serial_softserial.c">
+      <Filter>原始程式檔</Filter>
+    </ClCompile>
+    <ClCompile Include="drivers\serial_uart.c">
+      <Filter>原始程式檔</Filter>
+    </ClCompile>
+    <ClCompile Include="drivers\serial_uart_stm32f10x.c">
+      <Filter>原始程式檔</Filter>
+    </ClCompile>
+    <ClCompile Include="drivers\serial_uart_stm32f30x.c">
+      <Filter>原始程式檔</Filter>
+    </ClCompile>
+    <ClCompile Include="drivers\serial_uart_stm32f4xx.c">
+      <Filter>原始程式檔</Filter>
+    </ClCompile>
+    <ClCompile Include="drivers\serial_usb_vcp.c">
+      <Filter>原始程式檔</Filter>
+    </ClCompile>
+    <ClCompile Include="drivers\sonar_hcsr04.c">
+      <Filter>原始程式檔</Filter>
+    </ClCompile>
+    <ClCompile Include="drivers\sonar_srf10.c">
+      <Filter>原始程式檔</Filter>
+    </ClCompile>
+    <ClCompile Include="drivers\sound_beeper.c">
+      <Filter>原始程式檔</Filter>
+    </ClCompile>
+    <ClCompile Include="drivers\sound_beeper_stm32f10x.c">
+      <Filter>原始程式檔</Filter>
+    </ClCompile>
+    <ClCompile Include="drivers\sound_beeper_stm32f30x.c">
+      <Filter>原始程式檔</Filter>
+    </ClCompile>
+    <ClCompile Include="drivers\stack_check.c">
+      <Filter>原始程式檔</Filter>
+    </ClCompile>
+    <ClCompile Include="drivers\system.c">
+      <Filter>原始程式檔</Filter>
+    </ClCompile>
+    <ClCompile Include="drivers\system_stm32f10x.c">
+      <Filter>原始程式檔</Filter>
+    </ClCompile>
+    <ClCompile Include="drivers\system_stm32f30x.c">
+      <Filter>原始程式檔</Filter>
+    </ClCompile>
+    <ClCompile Include="drivers\system_stm32f4xx.c">
+      <Filter>原始程式檔</Filter>
+    </ClCompile>
+    <ClCompile Include="drivers\timer.c">
+      <Filter>原始程式檔</Filter>
+    </ClCompile>
+    <ClCompile Include="drivers\timer_stm32f10x.c">
+      <Filter>原始程式檔</Filter>
+    </ClCompile>
+    <ClCompile Include="drivers\timer_stm32f30x.c">
+      <Filter>原始程式檔</Filter>
+    </ClCompile>
+    <ClCompile Include="drivers\timer_stm32f4xx.c">
+      <Filter>原始程式檔</Filter>
+    </ClCompile>
+    <ClCompile Include="drivers\usb_detection.c">
+      <Filter>原始程式檔</Filter>
+    </ClCompile>
+    <ClCompile Include="drivers\usb_io.c">
+      <Filter>原始程式檔</Filter>
+    </ClCompile>
+    <ClCompile Include="fc\fc_hardfaults.c">
+      <Filter>原始程式檔</Filter>
+    </ClCompile>
+    <ClCompile Include="fc\fc_init.c">
+      <Filter>原始程式檔</Filter>
+    </ClCompile>
+    <ClCompile Include="fc\fc_msp.c">
+      <Filter>原始程式檔</Filter>
+    </ClCompile>
+    <ClCompile Include="fc\fc_tasks.c">
+      <Filter>原始程式檔</Filter>
+    </ClCompile>
+    <ClCompile Include="fc\mw.c">
+      <Filter>原始程式檔</Filter>
+    </ClCompile>
+    <ClCompile Include="fc\rc_controls.c">
+      <Filter>原始程式檔</Filter>
+    </ClCompile>
+    <ClCompile Include="fc\rc_curves.c">
+      <Filter>原始程式檔</Filter>
+    </ClCompile>
+    <ClCompile Include="fc\runtime_config.c">
+      <Filter>原始程式檔</Filter>
+    </ClCompile>
+    <ClCompile Include="flight\failsafe.c">
+      <Filter>原始程式檔</Filter>
+    </ClCompile>
+    <ClCompile Include="flight\gps_conversion.c">
+      <Filter>原始程式檔</Filter>
+    </ClCompile>
+    <ClCompile Include="flight\hil.c">
+      <Filter>原始程式檔</Filter>
+    </ClCompile>
+    <ClCompile Include="flight\imu.c">
+      <Filter>原始程式檔</Filter>
+    </ClCompile>
+    <ClCompile Include="flight\mixer.c">
+      <Filter>原始程式檔</Filter>
+    </ClCompile>
+    <ClCompile Include="flight\navigation_rewrite.c">
+      <Filter>原始程式檔</Filter>
+    </ClCompile>
+    <ClCompile Include="flight\navigation_rewrite_fixedwing.c">
+      <Filter>原始程式檔</Filter>
+    </ClCompile>
+    <ClCompile Include="flight\navigation_rewrite_fw_launch.c">
+      <Filter>原始程式檔</Filter>
+    </ClCompile>
+    <ClCompile Include="flight\navigation_rewrite_geo.c">
+      <Filter>原始程式檔</Filter>
+    </ClCompile>
+    <ClCompile Include="flight\navigation_rewrite_multicopter.c">
+      <Filter>原始程式檔</Filter>
+    </ClCompile>
+    <ClCompile Include="flight\navigation_rewrite_pos_estimator.c">
+      <Filter>原始程式檔</Filter>
+    </ClCompile>
+    <ClCompile Include="flight\pid.c">
+      <Filter>原始程式檔</Filter>
+    </ClCompile>
+    <ClCompile Include="flight\servos.c">
+      <Filter>原始程式檔</Filter>
+    </ClCompile>
+    <ClCompile Include="io\asyncfatfs\asyncfatfs.c">
+      <Filter>原始程式檔</Filter>
+    </ClCompile>
+    <ClCompile Include="io\asyncfatfs\fat_standard.c">
+      <Filter>原始程式檔</Filter>
+    </ClCompile>
+    <ClCompile Include="io\beeper.c">
+      <Filter>原始程式檔</Filter>
+    </ClCompile>
+    <ClCompile Include="io\dashboard.c">
+      <Filter>原始程式檔</Filter>
+    </ClCompile>
+    <ClCompile Include="io\flashfs.c">
+      <Filter>原始程式檔</Filter>
+    </ClCompile>
+    <ClCompile Include="io\gps.c">
+      <Filter>原始程式檔</Filter>
+    </ClCompile>
+    <ClCompile Include="io\gps_i2cnav.c">
+      <Filter>原始程式檔</Filter>
+    </ClCompile>
+    <ClCompile Include="io\gps_naza.c">
+      <Filter>原始程式檔</Filter>
+    </ClCompile>
+    <ClCompile Include="io\gps_nmea.c">
+      <Filter>原始程式檔</Filter>
+    </ClCompile>
+    <ClCompile Include="io\gps_ublox.c">
+      <Filter>原始程式檔</Filter>
+    </ClCompile>
+    <ClCompile Include="io\ledstrip.c">
+      <Filter>原始程式檔</Filter>
+    </ClCompile>
+    <ClCompile Include="io\pwmdriver_i2c.c">
+      <Filter>原始程式檔</Filter>
+    </ClCompile>
+    <ClCompile Include="io\serial.c">
+      <Filter>原始程式檔</Filter>
+    </ClCompile>
+    <ClCompile Include="io\serial_4way.c">
+      <Filter>原始程式檔</Filter>
+    </ClCompile>
+    <ClCompile Include="io\serial_4way_avrootloader.c">
+      <Filter>原始程式檔</Filter>
+    </ClCompile>
+    <ClCompile Include="io\serial_4way_stk500v2.c">
+      <Filter>原始程式檔</Filter>
+    </ClCompile>
+    <ClCompile Include="io\serial_cli.c">
+      <Filter>原始程式檔</Filter>
+    </ClCompile>
+    <ClCompile Include="io\statusindicator.c">
+      <Filter>原始程式檔</Filter>
+    </ClCompile>
+    <ClCompile Include="msp\msp_serial.c">
+      <Filter>原始程式檔</Filter>
+    </ClCompile>
+    <ClCompile Include="rx\ibus.c">
+      <Filter>原始程式檔</Filter>
+    </ClCompile>
+    <ClCompile Include="rx\jetiexbus.c">
+      <Filter>原始程式檔</Filter>
+    </ClCompile>
+    <ClCompile Include="rx\msp.c">
+      <Filter>原始程式檔</Filter>
+    </ClCompile>
+    <ClCompile Include="rx\nrf24_cx10.c">
+      <Filter>原始程式檔</Filter>
+    </ClCompile>
+    <ClCompile Include="rx\nrf24_h8_3d.c">
+      <Filter>原始程式檔</Filter>
+    </ClCompile>
+    <ClCompile Include="rx\nrf24_inav.c">
+      <Filter>原始程式檔</Filter>
+    </ClCompile>
+    <ClCompile Include="rx\nrf24_syma.c">
+      <Filter>原始程式檔</Filter>
+    </ClCompile>
+    <ClCompile Include="rx\nrf24_v202.c">
+      <Filter>原始程式檔</Filter>
+    </ClCompile>
+    <ClCompile Include="rx\pwm.c">
+      <Filter>原始程式檔</Filter>
+    </ClCompile>
+    <ClCompile Include="rx\rx.c">
+      <Filter>原始程式檔</Filter>
+    </ClCompile>
+    <ClCompile Include="rx\rx_spi.c">
+      <Filter>原始程式檔</Filter>
+    </ClCompile>
+    <ClCompile Include="rx\sbus.c">
+      <Filter>原始程式檔</Filter>
+    </ClCompile>
+    <ClCompile Include="rx\spektrum.c">
+      <Filter>原始程式檔</Filter>
+    </ClCompile>
+    <ClCompile Include="rx\sumd.c">
+      <Filter>原始程式檔</Filter>
+    </ClCompile>
+    <ClCompile Include="rx\sumh.c">
+      <Filter>原始程式檔</Filter>
+    </ClCompile>
+    <ClCompile Include="rx\xbus.c">
+      <Filter>原始程式檔</Filter>
+    </ClCompile>
+    <ClCompile Include="scheduler\scheduler.c">
+      <Filter>原始程式檔</Filter>
+    </ClCompile>
+    <ClCompile Include="sensors\acceleration.c">
+      <Filter>原始程式檔</Filter>
+    </ClCompile>
+    <ClCompile Include="sensors\barometer.c">
+      <Filter>原始程式檔</Filter>
+    </ClCompile>
+    <ClCompile Include="sensors\battery.c">
+      <Filter>原始程式檔</Filter>
+    </ClCompile>
+    <ClCompile Include="sensors\boardalignment.c">
+      <Filter>原始程式檔</Filter>
+    </ClCompile>
+    <ClCompile Include="sensors\compass.c">
+      <Filter>原始程式檔</Filter>
+    </ClCompile>
+    <ClCompile Include="sensors\gyro.c">
+      <Filter>原始程式檔</Filter>
+    </ClCompile>
+    <ClCompile Include="sensors\initialisation.c">
+      <Filter>原始程式檔</Filter>
+    </ClCompile>
+    <ClCompile Include="sensors\pitotmeter.c">
+      <Filter>原始程式檔</Filter>
+    </ClCompile>
+    <ClCompile Include="sensors\rangefinder.c">
+      <Filter>原始程式檔</Filter>
+    </ClCompile>
+    <ClCompile Include="target\SPRACINGF3\target.c">
+      <Filter>原始程式檔</Filter>
+    </ClCompile>
+    <ClCompile Include="target\system_stm32f30x.c">
+      <Filter>原始程式檔</Filter>
+    </ClCompile>
+    <ClCompile Include="target\system_stm32f4xx.c">
+      <Filter>原始程式檔</Filter>
+    </ClCompile>
+    <ClCompile Include="telemetry\frsky.c">
+      <Filter>原始程式檔</Filter>
+    </ClCompile>
+    <ClCompile Include="telemetry\hott.c">
+      <Filter>原始程式檔</Filter>
+    </ClCompile>
+    <ClCompile Include="telemetry\ibus.c">
+      <Filter>原始程式檔</Filter>
+    </ClCompile>
+    <ClCompile Include="telemetry\ltm.c">
+      <Filter>原始程式檔</Filter>
+    </ClCompile>
+    <ClCompile Include="telemetry\mavlink.c">
+      <Filter>原始程式檔</Filter>
+    </ClCompile>
+    <ClCompile Include="telemetry\smartport.c">
+      <Filter>原始程式檔</Filter>
+    </ClCompile>
+    <ClCompile Include="telemetry\telemetry.c">
+      <Filter>原始程式檔</Filter>
+    </ClCompile>
+    <ClCompile Include="vcp\hw_config.c">
+      <Filter>原始程式檔</Filter>
+    </ClCompile>
+    <ClCompile Include="vcp\stm32_it.c">
+      <Filter>原始程式檔</Filter>
+    </ClCompile>
+    <ClCompile Include="vcp\usb_desc.c">
+      <Filter>原始程式檔</Filter>
+    </ClCompile>
+    <ClCompile Include="vcp\usb_endp.c">
+      <Filter>原始程式檔</Filter>
+    </ClCompile>
+    <ClCompile Include="vcp\usb_istr.c">
+      <Filter>原始程式檔</Filter>
+    </ClCompile>
+    <ClCompile Include="vcp\usb_prop.c">
+      <Filter>原始程式檔</Filter>
+    </ClCompile>
+    <ClCompile Include="vcp\usb_pwr.c">
+      <Filter>原始程式檔</Filter>
+    </ClCompile>
+    <ClCompile Include="vcpf4\stm32f4xx_it.c">
+      <Filter>原始程式檔</Filter>
+    </ClCompile>
+    <ClCompile Include="vcpf4\usbd_cdc_vcp.c">
+      <Filter>原始程式檔</Filter>
+    </ClCompile>
+    <ClCompile Include="vcpf4\usbd_desc.c">
+      <Filter>原始程式檔</Filter>
+    </ClCompile>
+    <ClCompile Include="vcpf4\usbd_usr.c">
+      <Filter>原始程式檔</Filter>
+    </ClCompile>
+    <ClCompile Include="vcpf4\usb_bsp.c">
+      <Filter>原始程式檔</Filter>
+    </ClCompile>
+    <ClCompile Include="main.c">
+      <Filter>原始程式檔</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="rx\xbus.h">
+      <Filter>標頭檔</Filter>
+    </ClInclude>
+    <ClInclude Include="sensors\acceleration.h">
+      <Filter>標頭檔</Filter>
+    </ClInclude>
+    <ClInclude Include="drivers\accgyro.h">
+      <Filter>標頭檔</Filter>
+    </ClInclude>
+    <ClInclude Include="drivers\accgyro_adxl345.h">
+      <Filter>標頭檔</Filter>
+    </ClInclude>
+    <ClInclude Include="drivers\accgyro_bma280.h">
+      <Filter>標頭檔</Filter>
+    </ClInclude>
+    <ClInclude Include="drivers\accgyro_fake.h">
+      <Filter>標頭檔</Filter>
+    </ClInclude>
+    <ClInclude Include="drivers\accgyro_l3g4200d.h">
+      <Filter>標頭檔</Filter>
+    </ClInclude>
+    <ClInclude Include="drivers\accgyro_l3gd20.h">
+      <Filter>標頭檔</Filter>
+    </ClInclude>
+    <ClInclude Include="drivers\accgyro_lsm303dlhc.h">
+      <Filter>標頭檔</Filter>
+    </ClInclude>
+    <ClInclude Include="drivers\accgyro_mma845x.h">
+      <Filter>標頭檔</Filter>
+    </ClInclude>
+    <ClInclude Include="drivers\accgyro_mpu.h">
+      <Filter>標頭檔</Filter>
+    </ClInclude>
+    <ClInclude Include="drivers\accgyro_mpu3050.h">
+      <Filter>標頭檔</Filter>
+    </ClInclude>
+    <ClInclude Include="drivers\accgyro_mpu6050.h">
+      <Filter>標頭檔</Filter>
+    </ClInclude>
+    <ClInclude Include="drivers\accgyro_mpu6500.h">
+      <Filter>標頭檔</Filter>
+    </ClInclude>
+    <ClInclude Include="drivers\accgyro_spi_mpu6000.h">
+      <Filter>標頭檔</Filter>
+    </ClInclude>
+    <ClInclude Include="drivers\accgyro_spi_mpu6500.h">
+      <Filter>標頭檔</Filter>
+    </ClInclude>
+    <ClInclude Include="drivers\accgyro_spi_mpu9250.h">
+      <Filter>標頭檔</Filter>
+    </ClInclude>
+    <ClInclude Include="drivers\adc.h">
+      <Filter>標頭檔</Filter>
+    </ClInclude>
+    <ClInclude Include="drivers\adc_impl.h">
+      <Filter>標頭檔</Filter>
+    </ClInclude>
+    <ClInclude Include="build\assert.h">
+      <Filter>標頭檔</Filter>
+    </ClInclude>
+    <ClInclude Include="io\asyncfatfs\asyncfatfs.h">
+      <Filter>標頭檔</Filter>
+    </ClInclude>
+    <ClInclude Include="build\atomic.h">
+      <Filter>標頭檔</Filter>
+    </ClInclude>
+    <ClInclude Include="common\axis.h">
+      <Filter>標頭檔</Filter>
+    </ClInclude>
+    <ClInclude Include="sensors\barometer.h">
+      <Filter>標頭檔</Filter>
+    </ClInclude>
+    <ClInclude Include="drivers\barometer.h">
+      <Filter>標頭檔</Filter>
+    </ClInclude>
+    <ClInclude Include="drivers\barometer_bmp085.h">
+      <Filter>標頭檔</Filter>
+    </ClInclude>
+    <ClInclude Include="drivers\barometer_bmp280.h">
+      <Filter>標頭檔</Filter>
+    </ClInclude>
+    <ClInclude Include="drivers\barometer_fake.h">
+      <Filter>標頭檔</Filter>
+    </ClInclude>
+    <ClInclude Include="drivers\barometer_ms5611.h">
+      <Filter>標頭檔</Filter>
+    </ClInclude>
+    <ClInclude Include="drivers\barometer_spi_bmp280.h">
+      <Filter>標頭檔</Filter>
+    </ClInclude>
+    <ClInclude Include="sensors\battery.h">
+      <Filter>標頭檔</Filter>
+    </ClInclude>
+    <ClInclude Include="io\beeper.h">
+      <Filter>標頭檔</Filter>
+    </ClInclude>
+    <ClInclude Include="blackbox\blackbox.h">
+      <Filter>標頭檔</Filter>
+    </ClInclude>
+    <ClInclude Include="blackbox\blackbox_fielddefs.h">
+      <Filter>標頭檔</Filter>
+    </ClInclude>
+    <ClInclude Include="blackbox\blackbox_io.h">
+      <Filter>標頭檔</Filter>
+    </ClInclude>
+    <ClInclude Include="sensors\boardalignment.h">
+      <Filter>標頭檔</Filter>
+    </ClInclude>
+    <ClInclude Include="drivers\buf_writer.h">
+      <Filter>標頭檔</Filter>
+    </ClInclude>
+    <ClInclude Include="build\build_config.h">
+      <Filter>標頭檔</Filter>
+    </ClInclude>
+    <ClInclude Include="drivers\bus_i2c.h">
+      <Filter>標頭檔</Filter>
+    </ClInclude>
+    <ClInclude Include="drivers\bus_spi.h">
+      <Filter>標頭檔</Filter>
+    </ClInclude>
+    <ClInclude Include="drivers\bus_spi_soft.h">
+      <Filter>標頭檔</Filter>
+    </ClInclude>
+    <ClInclude Include="common\color.h">
+      <Filter>標頭檔</Filter>
+    </ClInclude>
+    <ClInclude Include="common\colorconversion.h">
+      <Filter>標頭檔</Filter>
+    </ClInclude>
+    <ClInclude Include="target\common.h">
+      <Filter>標頭檔</Filter>
+    </ClInclude>
+    <ClInclude Include="sensors\compass.h">
+      <Filter>標頭檔</Filter>
+    </ClInclude>
+    <ClInclude Include="drivers\compass.h">
+      <Filter>標頭檔</Filter>
+    </ClInclude>
+    <ClInclude Include="drivers\compass_ak8963.h">
+      <Filter>標頭檔</Filter>
+    </ClInclude>
+    <ClInclude Include="drivers\compass_ak8975.h">
+      <Filter>標頭檔</Filter>
+    </ClInclude>
+    <ClInclude Include="drivers\compass_fake.h">
+      <Filter>標頭檔</Filter>
+    </ClInclude>
+    <ClInclude Include="drivers\compass_hmc5883l.h">
+      <Filter>標頭檔</Filter>
+    </ClInclude>
+    <ClInclude Include="drivers\compass_mag3110.h">
+      <Filter>標頭檔</Filter>
+    </ClInclude>
+    <ClInclude Include="config\config.h">
+      <Filter>標頭檔</Filter>
+    </ClInclude>
+    <ClInclude Include="config\config_eeprom.h">
+      <Filter>標頭檔</Filter>
+    </ClInclude>
+    <ClInclude Include="config\config_master.h">
+      <Filter>標頭檔</Filter>
+    </ClInclude>
+    <ClInclude Include="config\config_profile.h">
+      <Filter>標頭檔</Filter>
+    </ClInclude>
+    <ClInclude Include="config\config_unittest.h">
+      <Filter>標頭檔</Filter>
+    </ClInclude>
+    <ClInclude Include="io\dashboard.h">
+      <Filter>標頭檔</Filter>
+    </ClInclude>
+    <ClInclude Include="build\debug.h">
+      <Filter>標頭檔</Filter>
+    </ClInclude>
+    <ClInclude Include="drivers\display_ug2864hsweg01.h">
+      <Filter>標頭檔</Filter>
+    </ClInclude>
+    <ClInclude Include="drivers\dma.h">
+      <Filter>標頭檔</Filter>
+    </ClInclude>
+    <ClInclude Include="common\encoding.h">
+      <Filter>標頭檔</Filter>
+    </ClInclude>
+    <ClInclude Include="drivers\exti.h">
+      <Filter>標頭檔</Filter>
+    </ClInclude>
+    <ClInclude Include="flight\failsafe.h">
+      <Filter>標頭檔</Filter>
+    </ClInclude>
+    <ClInclude Include="io\asyncfatfs\fat_standard.h">
+      <Filter>標頭檔</Filter>
+    </ClInclude>
+    <ClInclude Include="fc\fc_init.h">
+      <Filter>標頭檔</Filter>
+    </ClInclude>
+    <ClInclude Include="fc\fc_msp.h">
+      <Filter>標頭檔</Filter>
+    </ClInclude>
+    <ClInclude Include="fc\fc_tasks.h">
+      <Filter>標頭檔</Filter>
+    </ClInclude>
+    <ClInclude Include="config\feature.h">
+      <Filter>標頭檔</Filter>
+    </ClInclude>
+    <ClInclude Include="common\filter.h">
+      <Filter>標頭檔</Filter>
+    </ClInclude>
+    <ClInclude Include="drivers\flash.h">
+      <Filter>標頭檔</Filter>
+    </ClInclude>
+    <ClInclude Include="drivers\flash_m25p16.h">
+      <Filter>標頭檔</Filter>
+    </ClInclude>
+    <ClInclude Include="io\flashfs.h">
+      <Filter>標頭檔</Filter>
+    </ClInclude>
+    <ClInclude Include="telemetry\frsky.h">
+      <Filter>標頭檔</Filter>
+    </ClInclude>
+    <ClInclude Include="io\gimbal.h">
+      <Filter>標頭檔</Filter>
+    </ClInclude>
+    <ClInclude Include="drivers\gpio.h">
+      <Filter>標頭檔</Filter>
+    </ClInclude>
+    <ClInclude Include="io\gps.h">
+      <Filter>標頭檔</Filter>
+    </ClInclude>
+    <ClInclude Include="flight\gps_conversion.h">
+      <Filter>標頭檔</Filter>
+    </ClInclude>
+    <ClInclude Include="drivers\gps_i2cnav.h">
+      <Filter>標頭檔</Filter>
+    </ClInclude>
+    <ClInclude Include="io\gps_private.h">
+      <Filter>標頭檔</Filter>
+    </ClInclude>
+    <ClInclude Include="sensors\gyro.h">
+      <Filter>標頭檔</Filter>
+    </ClInclude>
+    <ClInclude Include="drivers\gyro_sync.h">
+      <Filter>標頭檔</Filter>
+    </ClInclude>
+    <ClInclude Include="flight\hil.h">
+      <Filter>標頭檔</Filter>
+    </ClInclude>
+    <ClInclude Include="telemetry\hott.h">
+      <Filter>標頭檔</Filter>
+    </ClInclude>
+    <ClInclude Include="vcp\hw_config.h">
+      <Filter>標頭檔</Filter>
+    </ClInclude>
+    <ClInclude Include="telemetry\ibus.h">
+      <Filter>標頭檔</Filter>
+    </ClInclude>
+    <ClInclude Include="rx\ibus.h">
+      <Filter>標頭檔</Filter>
+    </ClInclude>
+    <ClInclude Include="flight\imu.h">
+      <Filter>標頭檔</Filter>
+    </ClInclude>
+    <ClInclude Include="sensors\initialisation.h">
+      <Filter>標頭檔</Filter>
+    </ClInclude>
+    <ClInclude Include="drivers\inverter.h">
+      <Filter>標頭檔</Filter>
+    </ClInclude>
+    <ClInclude Include="drivers\io.h">
+      <Filter>標頭檔</Filter>
+    </ClInclude>
+    <ClInclude Include="drivers\io_def.h">
+      <Filter>標頭檔</Filter>
+    </ClInclude>
+    <ClInclude Include="drivers\io_def_generated.h">
+      <Filter>標頭檔</Filter>
+    </ClInclude>
+    <ClInclude Include="drivers\io_impl.h">
+      <Filter>標頭檔</Filter>
+    </ClInclude>
+    <ClInclude Include="drivers\io_pca9685.h">
+      <Filter>標頭檔</Filter>
+    </ClInclude>
+    <ClInclude Include="drivers\io_types.h">
+      <Filter>標頭檔</Filter>
+    </ClInclude>
+    <ClInclude Include="telemetry\jetiexbus.h">
+      <Filter>標頭檔</Filter>
+    </ClInclude>
+    <ClInclude Include="rx\jetiexbus.h">
+      <Filter>標頭檔</Filter>
+    </ClInclude>
+    <ClInclude Include="io\ledstrip.h">
+      <Filter>標頭檔</Filter>
+    </ClInclude>
+    <ClInclude Include="drivers\light_led.h">
+      <Filter>標頭檔</Filter>
+    </ClInclude>
+    <ClInclude Include="drivers\light_ws2811strip.h">
+      <Filter>標頭檔</Filter>
+    </ClInclude>
+    <ClInclude Include="drivers\logging.h">
+      <Filter>標頭檔</Filter>
+    </ClInclude>
+    <ClInclude Include="drivers\logging_codes.h">
+      <Filter>標頭檔</Filter>
+    </ClInclude>
+    <ClInclude Include="telemetry\ltm.h">
+      <Filter>標頭檔</Filter>
+    </ClInclude>
+    <ClInclude Include="common\maths.h">
+      <Filter>標頭檔</Filter>
+    </ClInclude>
+    <ClInclude Include="telemetry\mavlink.h">
+      <Filter>標頭檔</Filter>
+    </ClInclude>
+    <ClInclude Include="flight\mixer.h">
+      <Filter>標頭檔</Filter>
+    </ClInclude>
+    <ClInclude Include="io\motors.h">
+      <Filter>標頭檔</Filter>
+    </ClInclude>
+    <ClInclude Include="msp\msp.h">
+      <Filter>標頭檔</Filter>
+    </ClInclude>
+    <ClInclude Include="rx\msp.h">
+      <Filter>標頭檔</Filter>
+    </ClInclude>
+    <ClInclude Include="msp\msp_protocol.h">
+      <Filter>標頭檔</Filter>
+    </ClInclude>
+    <ClInclude Include="msp\msp_serial.h">
+      <Filter>標頭檔</Filter>
+    </ClInclude>
+    <ClInclude Include="fc\mw.h">
+      <Filter>標頭檔</Filter>
+    </ClInclude>
+    <ClInclude Include="flight\navigation_rewrite.h">
+      <Filter>標頭檔</Filter>
+    </ClInclude>
+    <ClInclude Include="flight\navigation_rewrite_private.h">
+      <Filter>標頭檔</Filter>
+    </ClInclude>
+    <ClInclude Include="rx\nrf24_cx10.h">
+      <Filter>標頭檔</Filter>
+    </ClInclude>
+    <ClInclude Include="rx\nrf24_h8_3d.h">
+      <Filter>標頭檔</Filter>
+    </ClInclude>
+    <ClInclude Include="rx\nrf24_inav.h">
+      <Filter>標頭檔</Filter>
+    </ClInclude>
+    <ClInclude Include="rx\nrf24_syma.h">
+      <Filter>標頭檔</Filter>
+    </ClInclude>
+    <ClInclude Include="rx\nrf24_v202.h">
+      <Filter>標頭檔</Filter>
+    </ClInclude>
+    <ClInclude Include="drivers\nvic.h">
+      <Filter>標頭檔</Filter>
+    </ClInclude>
+    <ClInclude Include="config\parameter_group.h">
+      <Filter>標頭檔</Filter>
+    </ClInclude>
+    <ClInclude Include="config\parameter_group_ids.h">
+      <Filter>標頭檔</Filter>
+    </ClInclude>
+    <ClInclude Include="flight\pid.h">
+      <Filter>標頭檔</Filter>
+    </ClInclude>
+    <ClInclude Include="sensors\pitotmeter.h">
+      <Filter>標頭檔</Filter>
+    </ClInclude>
+    <ClInclude Include="drivers\pitotmeter.h">
+      <Filter>標頭檔</Filter>
+    </ClInclude>
+    <ClInclude Include="drivers\pitotmeter_fake.h">
+      <Filter>標頭檔</Filter>
+    </ClInclude>
+    <ClInclude Include="drivers\pitotmeter_ms4525.h">
+      <Filter>標頭檔</Filter>
+    </ClInclude>
+    <ClInclude Include="platform.h">
+      <Filter>標頭檔</Filter>
+    </ClInclude>
+    <ClInclude Include="vcp\platform_config.h">
+      <Filter>標頭檔</Filter>
+    </ClInclude>
+    <ClInclude Include="common\printf.h">
+      <Filter>標頭檔</Filter>
+    </ClInclude>
+    <ClInclude Include="rx\pwm.h">
+      <Filter>標頭檔</Filter>
+    </ClInclude>
+    <ClInclude Include="drivers\pwm_mapping.h">
+      <Filter>標頭檔</Filter>
+    </ClInclude>
+    <ClInclude Include="drivers\pwm_output.h">
+      <Filter>標頭檔</Filter>
+    </ClInclude>
+    <ClInclude Include="drivers\pwm_rx.h">
+      <Filter>標頭檔</Filter>
+    </ClInclude>
+    <ClInclude Include="io\pwmdriver_i2c.h">
+      <Filter>標頭檔</Filter>
+    </ClInclude>
+    <ClInclude Include="drivers\rangefinder.h">
+      <Filter>標頭檔</Filter>
+    </ClInclude>
+    <ClInclude Include="sensors\rangefinder.h">
+      <Filter>標頭檔</Filter>
+    </ClInclude>
+    <ClInclude Include="fc\rc_controls.h">
+      <Filter>標頭檔</Filter>
+    </ClInclude>
+    <ClInclude Include="fc\rc_curves.h">
+      <Filter>標頭檔</Filter>
+    </ClInclude>
+    <ClInclude Include="drivers\rcc.h">
+      <Filter>標頭檔</Filter>
+    </ClInclude>
+    <ClInclude Include="drivers\rcc_types.h">
+      <Filter>標頭檔</Filter>
+    </ClInclude>
+    <ClInclude Include="drivers\resource.h">
+      <Filter>標頭檔</Filter>
+    </ClInclude>
+    <ClInclude Include="fc\runtime_config.h">
+      <Filter>標頭檔</Filter>
+    </ClInclude>
+    <ClInclude Include="rx\rx.h">
+      <Filter>標頭檔</Filter>
+    </ClInclude>
+    <ClInclude Include="drivers\rx_nrf24l01.h">
+      <Filter>標頭檔</Filter>
+    </ClInclude>
+    <ClInclude Include="drivers\rx_spi.h">
+      <Filter>標頭檔</Filter>
+    </ClInclude>
+    <ClInclude Include="rx\rx_spi.h">
+      <Filter>標頭檔</Filter>
+    </ClInclude>
+    <ClInclude Include="drivers\rx_xn297.h">
+      <Filter>標頭檔</Filter>
+    </ClInclude>
+    <ClInclude Include="rx\sbus.h">
+      <Filter>標頭檔</Filter>
+    </ClInclude>
+    <ClInclude Include="scheduler\scheduler.h">
+      <Filter>標頭檔</Filter>
+    </ClInclude>
+    <ClInclude Include="drivers\sdcard.h">
+      <Filter>標頭檔</Filter>
+    </ClInclude>
+    <ClInclude Include="drivers\sdcard_standard.h">
+      <Filter>標頭檔</Filter>
+    </ClInclude>
+    <ClInclude Include="drivers\sensor.h">
+      <Filter>標頭檔</Filter>
+    </ClInclude>
+    <ClInclude Include="sensors\sensors.h">
+      <Filter>標頭檔</Filter>
+    </ClInclude>
+    <ClInclude Include="drivers\serial.h">
+      <Filter>標頭檔</Filter>
+    </ClInclude>
+    <ClInclude Include="io\serial.h">
+      <Filter>標頭檔</Filter>
+    </ClInclude>
+    <ClInclude Include="io\serial_4way.h">
+      <Filter>標頭檔</Filter>
+    </ClInclude>
+    <ClInclude Include="io\serial_4way_avrootloader.h">
+      <Filter>標頭檔</Filter>
+    </ClInclude>
+    <ClInclude Include="io\serial_4way_impl.h">
+      <Filter>標頭檔</Filter>
+    </ClInclude>
+    <ClInclude Include="io\serial_4way_stk500v2.h">
+      <Filter>標頭檔</Filter>
+    </ClInclude>
+    <ClInclude Include="io\serial_cli.h">
+      <Filter>標頭檔</Filter>
+    </ClInclude>
+    <ClInclude Include="drivers\serial_softserial.h">
+      <Filter>標頭檔</Filter>
+    </ClInclude>
+    <ClInclude Include="drivers\serial_uart.h">
+      <Filter>標頭檔</Filter>
+    </ClInclude>
+    <ClInclude Include="drivers\serial_uart_impl.h">
+      <Filter>標頭檔</Filter>
+    </ClInclude>
+    <ClInclude Include="drivers\serial_usb_vcp.h">
+      <Filter>標頭檔</Filter>
+    </ClInclude>
+    <ClInclude Include="io\servos.h">
+      <Filter>標頭檔</Filter>
+    </ClInclude>
+    <ClInclude Include="flight\servos.h">
+      <Filter>標頭檔</Filter>
+    </ClInclude>
+    <ClInclude Include="telemetry\smartport.h">
+      <Filter>標頭檔</Filter>
+    </ClInclude>
+    <ClInclude Include="sensors\sonar.h">
+      <Filter>標頭檔</Filter>
+    </ClInclude>
+    <ClInclude Include="drivers\sonar_hcsr04.h">
+      <Filter>標頭檔</Filter>
+    </ClInclude>
+    <ClInclude Include="drivers\sonar_srf10.h">
+      <Filter>標頭檔</Filter>
+    </ClInclude>
+    <ClInclude Include="drivers\sound_beeper.h">
+      <Filter>標頭檔</Filter>
+    </ClInclude>
+    <ClInclude Include="rx\spektrum.h">
+      <Filter>標頭檔</Filter>
+    </ClInclude>
+    <ClInclude Include="drivers\stack_check.h">
+      <Filter>標頭檔</Filter>
+    </ClInclude>
+    <ClInclude Include="io\statusindicator.h">
+      <Filter>標頭檔</Filter>
+    </ClInclude>
+    <ClInclude Include="vcp\stm32_it.h">
+      <Filter>標頭檔</Filter>
+    </ClInclude>
+    <ClInclude Include="vcpf4\stm32f4xx_it.h">
+      <Filter>標頭檔</Filter>
+    </ClInclude>
+    <ClInclude Include="common\streambuf.h">
+      <Filter>標頭檔</Filter>
+    </ClInclude>
+    <ClInclude Include="rx\sumd.h">
+      <Filter>標頭檔</Filter>
+    </ClInclude>
+    <ClInclude Include="rx\sumh.h">
+      <Filter>標頭檔</Filter>
+    </ClInclude>
+    <ClInclude Include="drivers\system.h">
+      <Filter>標頭檔</Filter>
+    </ClInclude>
+    <ClInclude Include="target\system_stm32f4xx.h">
+      <Filter>標頭檔</Filter>
+    </ClInclude>
+    <ClInclude Include="target\system_stm32f30x.h">
+      <Filter>標頭檔</Filter>
+    </ClInclude>
+    <ClInclude Include="target\SPRACINGF3\target.h">
+      <Filter>標頭檔</Filter>
+    </ClInclude>
+    <ClInclude Include="telemetry\telemetry.h">
+      <Filter>標頭檔</Filter>
+    </ClInclude>
+    <ClInclude Include="drivers\timer.h">
+      <Filter>標頭檔</Filter>
+    </ClInclude>
+    <ClInclude Include="drivers\timer_impl.h">
+      <Filter>標頭檔</Filter>
+    </ClInclude>
+    <ClInclude Include="drivers\timer_stm32f4xx.h">
+      <Filter>標頭檔</Filter>
+    </ClInclude>
+    <ClInclude Include="drivers\timer_stm32f10x.h">
+      <Filter>標頭檔</Filter>
+    </ClInclude>
+    <ClInclude Include="drivers\timer_stm32f30x.h">
+      <Filter>標頭檔</Filter>
+    </ClInclude>
+    <ClInclude Include="common\typeconversion.h">
+      <Filter>標頭檔</Filter>
+    </ClInclude>
+    <ClInclude Include="vcpf4\usb_conf.h">
+      <Filter>標頭檔</Filter>
+    </ClInclude>
+    <ClInclude Include="vcp\usb_conf.h">
+      <Filter>標頭檔</Filter>
+    </ClInclude>
+    <ClInclude Include="vcp\usb_desc.h">
+      <Filter>標頭檔</Filter>
+    </ClInclude>
+    <ClInclude Include="drivers\usb_detection.h">
+      <Filter>標頭檔</Filter>
+    </ClInclude>
+    <ClInclude Include="drivers\usb_io.h">
+      <Filter>標頭檔</Filter>
+    </ClInclude>
+    <ClInclude Include="vcp\usb_istr.h">
+      <Filter>標頭檔</Filter>
+    </ClInclude>
+    <ClInclude Include="vcp\usb_prop.h">
+      <Filter>標頭檔</Filter>
+    </ClInclude>
+    <ClInclude Include="vcp\usb_pwr.h">
+      <Filter>標頭檔</Filter>
+    </ClInclude>
+    <ClInclude Include="vcpf4\usbd_cdc_vcp.h">
+      <Filter>標頭檔</Filter>
+    </ClInclude>
+    <ClInclude Include="vcpf4\usbd_conf.h">
+      <Filter>標頭檔</Filter>
+    </ClInclude>
+    <ClInclude Include="vcpf4\usbd_desc.h">
+      <Filter>標頭檔</Filter>
+    </ClInclude>
+    <ClInclude Include="common\utils.h">
+      <Filter>標頭檔</Filter>
+    </ClInclude>
+    <ClInclude Include="build\version.h">
+      <Filter>標頭檔</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>
