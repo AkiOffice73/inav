@@ -29,6 +29,10 @@
 #define USE_SERIALRX_SBUS       // Very common protocol
 #define USE_SERIALRX_IBUS       // Cheap FlySky & Turnigy receivers
 
+#ifndef FLASH_SIZE
+#define FLASH_SIZE 256
+#endif // !FLASH_SIZE
+
 #if (FLASH_SIZE > 64)
 #define ASYNC_GYRO_PROCESSING
 #define BOOTLOG
