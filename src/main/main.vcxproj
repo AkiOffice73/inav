@@ -472,7 +472,7 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <IncludePath>$(ProjectDir);$(SolutionDir)lib\main\STM32_USB-FS-Device_Driver\inc;$(ProjectDir)target\SPRACINGF3;$(IncludePath)</IncludePath>
+    <IncludePath>$(ProjectDir);$(SolutionDir)lib\main\STM32_USB-FS-Device_Driver\inc;$(ProjectDir)target\SPRACINGF3;$(SolutionDir)lib\main;$(IncludePath)</IncludePath>
     <SourcePath>$(ProjectDir);$(SourcePath)</SourcePath>
     <ReferencePath>$(ReferencePath)</ReferencePath>
   </PropertyGroup>
