@@ -49,7 +49,8 @@ typedef enum {
     GPS_BAUDRATE_57600,
     GPS_BAUDRATE_38400,
     GPS_BAUDRATE_19200,
-    GPS_BAUDRATE_9600,
+	GPS_BAUDRATE_9600,
+	GPS_BAUDRATE_4800,
     GPS_BAUDRATE_COUNT
 } gpsBaudRate_e;
 
@@ -75,7 +76,7 @@ typedef enum {
     GPS_FIX_3D
 } gpsFixType_e;
 
-#define GPS_BAUDRATE_MAX GPS_BAUDRATE_9600
+#define GPS_BAUDRATE_MAX GPS_BAUDRATE_4800
 
 typedef struct gpsConfig_s {
     gpsProvider_e provider;

@@ -19,3 +19,4 @@ cov-int*
 docs/Manual.pdf
 README.pdf
 
+*.opendb
