@@ -485,6 +485,8 @@ static bool mspFcProcessOutCommand(uint8_t cmdMSP, sbuf_t *dst, mspPostProcessFn
 {
     switch (cmdMSP) {
     case MSP_API_VERSION:
+		//usb connected
+		//debug[2]++;
         sbufWriteU8(dst, MSP_PROTOCOL_VERSION);
 
         sbufWriteU8(dst, API_VERSION_MAJOR);
@@ -829,7 +831,6 @@ static bool mspFcProcessOutCommand(uint8_t cmdMSP, sbuf_t *dst, mspPostProcessFn
     case MSP_DEBUG:
         // output some useful QA statistics
         // debug[x] = ((hse_value / 1000000) * 1000) + (SystemCoreClock / 1000000);         // XX0YY [crystal clock : core clock]
-
         for (int i = 0; i < DEBUG16_VALUE_COUNT; i++) {
             sbufWriteU16(dst, debug[i]);      // 4 variables are here for general monitoring purpose
         }

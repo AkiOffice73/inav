@@ -257,6 +257,7 @@ static bool gpsReceiveData(void)
 
 static bool gpsInitialize(void)
 {
+
     gpsSetState(GPS_CHANGE_BAUD);
     return false;
 }
@@ -286,6 +287,8 @@ bool gpsHandleNMEA(void)
 
     case GPS_CHECK_VERSION:
     case GPS_CONFIGURE:
+		//TODO 提升baudRate=38400與更新率=5hz
+
         // No autoconfig, switch straight to receiving data
         gpsSetState(GPS_RECEIVING_DATA);
         return false;
