@@ -18,6 +18,8 @@
 #pragma once
 
 #include <stdint.h>
+#include "config/parameter_group.h"
+#include "drivers/rangefinder.h"
 
 typedef enum {
     RANGEFINDER_NONE    = 0,
@@ -27,27 +29,35 @@ typedef enum {
 	RANGEFINDER_COUNT
 } rangefinderType_e;
 
-struct rangefinder_s;
-typedef void (*rangefinderInitFunctionPtr)(struct rangefinder_s *rangefinderRange);
-typedef void (*rangefinderUpdateFunctionPtr)(void);
-typedef int32_t (*rangefinderReadFunctionPtr)(void);
+typedef struct rangefinderConfig_s {
+    uint8_t rangefinder_hardware;
+} rangefinderConfig_t;
 
-typedef struct rangefinderFunctionPointers_s {
-    rangefinderInitFunctionPtr init;
-    rangefinderUpdateFunctionPtr update;
-    rangefinderReadFunctionPtr read;
-} rangefinderFunctionPointers_t;
+PG_DECLARE(rangefinderConfig_t, rangefinderConfig);
+
+typedef struct rangefinder_s {
+    rangefinderDev_t dev;
+    float maxTiltCos;
+    int32_t rawAltitude;
+    int32_t calculatedAltitude;
+} rangefinder_t;
+
+extern rangefinder_t rangefinder;
+
+const rangefinderHardwarePins_t * sonarGetHardwarePins(void);
+
+bool rangefinderInit(void);
+
+
 
 //ori cf/inav sonar
 //TODO rename rangefinder->sonar
-rangefinderType_e rangefinderDetect(void);
 int32_t rangefinderCalculateAltitude(int32_t rangefinderDistance, float cosTiltAngle);
 int32_t rangefinderGetLatestAltitude(void);
-rangefinderType_e rangefinderDetect(void);
-void rangefinderInit(rangefinderType_e rangefinderType);
+
 void rangefinderUpdate(void);
 int32_t rangefinderRead(void);
-bool isRangefinderHealthy(void);
+bool rangefinderIsHealthy(void);
 
 //tofr
 rangefinderType_e tofrDetect(void);
@@ -57,5 +67,4 @@ void tofrInit(rangefinderType_e rangefinderType);
 void tofrUpdate(void);
 int32_t tofrRead(void);
 bool isTofrHealthy(void);
-
 
