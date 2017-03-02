@@ -83,7 +83,7 @@ baudRate_e gpsToSerialBaudRate[GPS_BAUDRATE_COUNT] = { BAUD_115200, BAUD_57600, 
 static gpsProviderDescriptor_t  gpsProviders[GPS_PROVIDER_COUNT] = {
     /* NMEA GPS */
 #ifdef GPS_PROTO_NMEA
-    { GPS_TYPE_SERIAL, MODE_RX, false, NULL, &gpsHandleNMEA },
+    { GPS_TYPE_SERIAL, MODE_RXTX, false, NULL, &gpsHandleNMEA },
 #else
     { GPS_TYPE_NA, 0, false,  NULL, NULL },
 #endif
@@ -421,6 +421,14 @@ void gpsEnablePassthrough(serialPort_t *gpsPassthroughPort)
             LED1_OFF;
         }
     }
+}
+
+void gpsSendCommandString(char * cmd)
+{
+	if (isSerialTransmitBufferEmpty(gpsState.gpsPort)) {
+		// Cycle through all possible bauds and send init string
+		serialPrint(gpsState.gpsPort, cmd);
+	}
 }
 
 void updateGpsIndicator(timeUs_t currentTimeUs)

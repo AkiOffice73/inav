@@ -162,7 +162,7 @@ void resetNavConfig(navConfig_t * navConfig)
 {
     // Navigation flags
     navConfig->general.flags.use_thr_mid_for_althold = 0;
-    navConfig->general.flags.extra_arming_safety = 1;
+    navConfig->general.flags.extra_arming_safety = 0;
     navConfig->general.flags.user_control_mode = NAV_GPS_ATTI;
     navConfig->general.flags.rth_alt_control_mode = NAV_RTH_AT_LEAST_ALT;
     navConfig->general.flags.rth_climb_first = 1;                         // Climb first, turn after reaching safe altitude
@@ -206,7 +206,7 @@ void resetNavConfig(navConfig_t * navConfig)
     navConfig->general.land_slowdown_maxalt = 2000; // 20 meters of altitude
     navConfig->general.emerg_descent_rate = 500;    // 5 m/s
     navConfig->general.min_rth_distance = 500;      // If closer than 5m - land immediately
-    navConfig->general.rth_altitude = 1000;         // 10m
+    navConfig->general.rth_altitude = 500;         // 10m -> 5m
 
     // MC-specific
     navConfig->mc.max_bank_angle = 30;      // 30 deg

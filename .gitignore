@@ -1,3 +1,4 @@
+src/main/xf/
 *.o
 .DS_Store
 *~

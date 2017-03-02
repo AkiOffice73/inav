@@ -111,6 +111,7 @@ extern uint16_t cycleTime; // FIXME dependency on mw.c
 extern uint8_t detectedSensors[SENSOR_INDEX_COUNT];
 
 void gpsEnablePassthrough(serialPort_t *gpsPassthroughPort);
+void gpsSendCommandString(char * cmd);
 
 static serialPort_t *cliPort;
 static bufWriter_t *cliWriter;
@@ -162,6 +163,7 @@ static void cliResource(char *cmdline);
 #endif
 #ifdef GPS
 static void cliGpsPassthrough(char *cmdline);
+static void cliGpsCmd(char *cmdline);
 #endif
 
 static void cliHelp(char *cmdline);
@@ -321,7 +323,8 @@ const clicmd_t cmdTable[] = {
     CLI_COMMAND_DEF("get", "get variable value",
             "[name]", cliGet),
 #ifdef GPS
-    CLI_COMMAND_DEF("gpspassthrough", "passthrough gps to serial", NULL, cliGpsPassthrough),
+	CLI_COMMAND_DEF("gpspassthrough", "passthrough gps to serial", NULL, cliGpsPassthrough),
+	CLI_COMMAND_DEF("gpscmd", "send Gps Nmea Cmd", NULL, cliGpsCmd),
 #endif
     CLI_COMMAND_DEF("help", NULL, NULL, cliHelp),
 #ifdef LED_STRIP
@@ -2388,9 +2391,26 @@ static void cliBeeper(char *cmdline)
 #ifdef GPS
 static void cliGpsPassthrough(char *cmdline)
 {
-    UNUSED(cmdline);
+	UNUSED(cmdline);
 
-    gpsEnablePassthrough(cliPort);
+	gpsEnablePassthrough(cliPort);
+}
+static void cliGpsCmd(char *cmdline)
+{
+	//UNUSED(cmdline);
+	//TODO 直接發送字串命令給gps
+	if (cmdline == "rp10hz")
+	{
+		gpsSendCommandString("$PMTK220,100*2F\r\n");
+	}
+	else if (cmdline == "up10hz")
+	{
+		gpsSendCommandString("$PMTK300,100,0,0,0,0*2C\r\n");
+	}
+	else
+	{
+		gpsSendCommandString(cmdline);
+	}
 }
 #endif
 

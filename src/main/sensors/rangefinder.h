@@ -23,7 +23,8 @@ typedef enum {
     RANGEFINDER_NONE    = 0,
     RANGEFINDER_HCSR04  = 1,
     RANGEFINDER_SRF10   = 2,
-	RANGEFINDER_LRF01	= 3,
+	RANGEFINDER_TOFRAIP01 = 3,
+	RANGEFINDER_COUNT
 } rangefinderType_e;
 
 struct rangefinder_s;
@@ -37,6 +38,8 @@ typedef struct rangefinderFunctionPointers_s {
     rangefinderReadFunctionPtr read;
 } rangefinderFunctionPointers_t;
 
+//ori cf/inav sonar
+//TODO rename rangefinder->sonar
 rangefinderType_e rangefinderDetect(void);
 int32_t rangefinderCalculateAltitude(int32_t rangefinderDistance, float cosTiltAngle);
 int32_t rangefinderGetLatestAltitude(void);
@@ -45,3 +48,14 @@ void rangefinderInit(rangefinderType_e rangefinderType);
 void rangefinderUpdate(void);
 int32_t rangefinderRead(void);
 bool isRangefinderHealthy(void);
+
+//tofr
+rangefinderType_e tofrDetect(void);
+int32_t tofrCalculateDistance(int32_t rangefinderDistance, float cosTiltAngle);
+int32_t tofrGetLatestDistance(void);
+void tofrInit(rangefinderType_e rangefinderType);
+void tofrUpdate(void);
+int32_t tofrRead(void);
+bool isTofrHealthy(void);
+
+
