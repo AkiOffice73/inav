@@ -21,11 +21,13 @@
 
 #if defined(NAV)
 
+#include "common/filter.h"
 #include "fc/runtime_config.h"
 
 #define MIN_POSITION_UPDATE_RATE_HZ         5       // Minimum position update rate at which XYZ controllers would be applied
 #define NAV_THROTTLE_CUTOFF_FREQENCY_HZ     4       // low-pass filter on throttle output
 #define NAV_ACCEL_CUTOFF_FREQUENCY_HZ       2       // low-pass filter on XY-acceleration target
+#define NAV_FW_CONTROL_MONITORING_RATE      2
 #define NAV_FW_VEL_CUTOFF_FREQENCY_HZ       2       // low-pass filter on Z-velocity for fixed wing
 #define NAV_FW_ROLL_CUTOFF_FREQUENCY_HZ     20      // low-pass filter on roll correction for fixed wing
 #define NAV_DTERM_CUT_HZ                    10
@@ -38,6 +40,7 @@
 #define US2S(us)    ((us) * 1e-6f)
 #define US2MS(us)   ((us) * 1e-3f)
 #define MS2US(ms)   ((ms) * 1000)
+#define MS2S(ms)    ((ms) * 1e-3f)
 #define HZ2S(hz)    US2S(HZ2US(hz))
 
 typedef enum {
@@ -91,6 +94,12 @@ typedef struct {
 typedef struct {
     float kP;
 } pControllerParam_t;
+
+typedef enum {
+    PID_DTERM_FROM_ERROR            = 1 << 0,
+    PID_ZERO_INTEGRATOR             = 1 << 1,
+    PID_SHRINK_INTEGRATOR           = 1 << 2,
+} pidControllerFlags_e;
 
 typedef struct {
     pidControllerParam_t param;
@@ -178,35 +187,33 @@ typedef enum {
 
     NAV_STATE_RTH_2D_INITIALIZE,                // 9
     NAV_STATE_RTH_2D_HEAD_HOME,                 // 10
-    NAV_STATE_RTH_2D_GPS_FAILING,               // 11
-    NAV_STATE_RTH_2D_FINISHING,                 // 12
-    NAV_STATE_RTH_2D_FINISHED,                  // 13
+    NAV_STATE_RTH_2D_FINISHING,                 // 11
+    NAV_STATE_RTH_2D_FINISHED,                  // 12
 
-    NAV_STATE_RTH_3D_INITIALIZE,                // 14
-    NAV_STATE_RTH_3D_CLIMB_TO_SAFE_ALT,         // 15
-    NAV_STATE_RTH_3D_HEAD_HOME,                 // 16
-    NAV_STATE_RTH_3D_GPS_FAILING,               // 17
-    NAV_STATE_RTH_3D_HOVER_PRIOR_TO_LANDING,    // 18
-    NAV_STATE_RTH_3D_LANDING,                   // 19
-    NAV_STATE_RTH_3D_FINISHING,                 // 20
-    NAV_STATE_RTH_3D_FINISHED,                  // 21
+    NAV_STATE_RTH_3D_INITIALIZE,                // 13
+    NAV_STATE_RTH_3D_CLIMB_TO_SAFE_ALT,         // 14
+    NAV_STATE_RTH_3D_HEAD_HOME,                 // 15
+    NAV_STATE_RTH_3D_HOVER_PRIOR_TO_LANDING,    // 16
+    NAV_STATE_RTH_3D_LANDING,                   // 17
+    NAV_STATE_RTH_3D_FINISHING,                 // 18
+    NAV_STATE_RTH_3D_FINISHED,                  // 19
 
-    NAV_STATE_WAYPOINT_INITIALIZE,              // 22
-    NAV_STATE_WAYPOINT_PRE_ACTION,              // 23
-    NAV_STATE_WAYPOINT_IN_PROGRESS,             // 24
-    NAV_STATE_WAYPOINT_REACHED,                 // 25
-    NAV_STATE_WAYPOINT_NEXT,                    // 26
-    NAV_STATE_WAYPOINT_FINISHED,                // 27
-    NAV_STATE_WAYPOINT_RTH_LAND,                // 28
+    NAV_STATE_WAYPOINT_INITIALIZE,              // 20
+    NAV_STATE_WAYPOINT_PRE_ACTION,              // 21
+    NAV_STATE_WAYPOINT_IN_PROGRESS,             // 22
+    NAV_STATE_WAYPOINT_REACHED,                 // 23
+    NAV_STATE_WAYPOINT_NEXT,                    // 24
+    NAV_STATE_WAYPOINT_FINISHED,                // 25
+    NAV_STATE_WAYPOINT_RTH_LAND,                // 26
 
-    NAV_STATE_EMERGENCY_LANDING_INITIALIZE,     // 29
-    NAV_STATE_EMERGENCY_LANDING_IN_PROGRESS,    // 30
-    NAV_STATE_EMERGENCY_LANDING_FINISHED,       // 31
+    NAV_STATE_EMERGENCY_LANDING_INITIALIZE,     // 27
+    NAV_STATE_EMERGENCY_LANDING_IN_PROGRESS,    // 28
+    NAV_STATE_EMERGENCY_LANDING_FINISHED,       // 29
 
-    NAV_STATE_LAUNCH_INITIALIZE,                // 32
-    NAV_STATE_LAUNCH_WAIT,                      // 33
-    NAV_STATE_LAUNCH_MOTOR_DELAY,               // 34
-    NAV_STATE_LAUNCH_IN_PROGRESS,               // 35
+    NAV_STATE_LAUNCH_INITIALIZE,                // 30
+    NAV_STATE_LAUNCH_WAIT,                      // 31
+    NAV_STATE_LAUNCH_MOTOR_DELAY,               // 32
+    NAV_STATE_LAUNCH_IN_PROGRESS,               // 33
 
     NAV_STATE_COUNT,
 } navigationFSMState_t;
@@ -246,6 +253,12 @@ typedef struct {
 } navigationFSMStateDescriptor_t;
 
 typedef struct {
+    timeMs_t        lastCheckTime;
+    t_fp_vector     initialPosition;
+    float           minimalDistanceToHome;
+} rthSanityChecker_t;
+
+typedef struct {
     /* Flags and navigation system state */
     navigationFSMState_t        navState;
 
@@ -267,6 +280,7 @@ typedef struct {
     gpsOrigin_s                 gpsOrigin;
 
     /* Home parameters (NEU coordinated), geodetic position of home (LLH) is stores in GPS_home variable */
+    rthSanityChecker_t          rthSanityChecker;
     navWaypointPosition_t       homePosition;       // Special waypoint, stores original yaw (heading when launched)
     navWaypointPosition_t       homeWaypointAbove;  // NEU-coordinates and initial bearing + desired RTH altitude
 
@@ -281,21 +295,15 @@ typedef struct {
     navWaypointPosition_t       activeWaypoint;     // Local position and initial bearing, filled on waypoint activation
     int8_t                      activeWaypointIndex;
 
-    /* Internals */
+    /* Internals & statistics */
     int16_t                     rcAdjustment[4];
-
-    navConfig_t *               navConfig;
-    rcControlsConfig_t *        rcControlsConfig;
-    pidProfile_t *              pidProfile;
-    rxConfig_t *                rxConfig;
-    flight3DConfig_t *          flight3DConfig;
-    motorConfig_t *             motorConfig;
+    float                       totalTripDistance;
 } navigationPosControl_t;
 
 extern navigationPosControl_t posControl;
 
 /* Internally used functions */
-float navPidApply2(float setpoint, float measurement, float dt, pidController_t *pid, float outMin, float outMax, bool dTermErrorTracking);
+float navPidApply2(pidController_t *pid, const float setpoint, const float measurement, const float dt, const float outMin, const float outMax, const pidControllerFlags_e pidFlags);
 void navPidReset(pidController_t *pid);
 void navPidInit(pidController_t *pid, float _kP, float _kI, float _kD);
 void navPInit(pController_t *p, float _kP);
@@ -314,7 +322,7 @@ void setDesiredPosition(const t_fp_vector * pos, int32_t yaw, navSetWaypointFlag
 void setDesiredSurfaceOffset(float surfaceOffset);
 void setDesiredPositionToFarAwayTarget(int32_t yaw, int32_t distance, navSetWaypointFlags_t useMask);
 
-bool isWaypointReached(const navWaypointPosition_t * waypoint);
+bool isWaypointReached(const navWaypointPosition_t * waypoint, const bool isWaypointHome);
 bool isWaypointMissed(const navWaypointPosition_t * waypoint);
 bool isApproachingLastWaypoint(void);
 float getActiveWaypointSpeed(void);

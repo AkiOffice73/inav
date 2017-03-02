@@ -17,11 +17,18 @@
 
 #pragma once
 
-extern uint8_t cliMode;
+#include "common/time.h"
 
-struct serialConfig_s;
-void cliInit(struct serialConfig_s *serialConfig);
-void cliProcess(void);
-struct serialPort_s;
-void cliEnter(struct serialPort_s *serialPort);
-bool cliIsActiveOnPort(struct serialPort_s *serialPort);
+typedef enum {
+    CRSF_FRAME_START = 0,
+    CRSF_FRAME_ATTITUDE = CRSF_FRAME_START,
+    CRSF_FRAME_BATTERY_SENSOR,
+    CRSF_FRAME_FLIGHT_MODE,
+    CRSF_FRAME_GPS
+} crsfFrameType_e;
+
+void initCrsfTelemetry(void);
+bool checkCrsfTelemetryState(void);
+void handleCrsfTelemetry(timeUs_t currentTimeUs);
+
+int getCrsfFrame(uint8_t *frame, crsfFrameType_e frameType);

@@ -19,9 +19,11 @@
 
 #include <stdint.h>
 #include <stdbool.h>
+#include "common/time.h"
+#include "config/parameter_group.h"
+#include "drivers/pwm_rx.h"
 
 #define MAX_PROFILE_COUNT 3
-#define MAX_CONTROL_RATE_PROFILE_COUNT 3
 #define ONESHOT_FEATURE_CHANGED_DELAY_ON_BOOT_MS 1500
 #define MAX_NAME_LENGTH 16
 
@@ -32,13 +34,11 @@
 #define ATTITUDE_TASK_FREQUENCY_MIN 100
 #define ATTITUDE_TASK_FREQUENCY_MAX 1000
 
-#ifdef ASYNC_GYRO_PROCESSING
 typedef enum {
     ASYNC_MODE_NONE,
     ASYNC_MODE_GYRO,
     ASYNC_MODE_ALL
 } asyncMode_e;
-#endif
 
 typedef enum {
     FEATURE_RX_PPM = 1 << 0,
@@ -49,8 +49,8 @@ typedef enum {
     FEATURE_SERVO_TILT = 1 << 5,
     FEATURE_SOFTSERIAL = 1 << 6,
     FEATURE_GPS = 1 << 7,
-    FEATURE_FAILSAFE = 1 << 8,
-    FEATURE_SONAR = 1 << 9,
+    FEATURE_UNUSED_3 = 1 << 8,          // was FEATURE_FAILSAFE
+    FEATURE_UNUSED_4 = 1 << 9,          // was FEATURE_SONAR
     FEATURE_TELEMETRY = 1 << 10,
     FEATURE_CURRENT_METER = 1 << 11,
     FEATURE_3D = 1 << 12,
@@ -58,7 +58,7 @@ typedef enum {
     FEATURE_RX_MSP = 1 << 14,
     FEATURE_RSSI_ADC = 1 << 15,
     FEATURE_LED_STRIP = 1 << 16,
-    FEATURE_DASHBOARD= 1 << 17,
+    FEATURE_DASHBOARD = 1 << 17,
     FEATURE_UNUSED_2 = 1 << 18,         // Unused in INAV
     FEATURE_BLACKBOX = 1 << 19,
     FEATURE_CHANNEL_FORWARDING = 1 << 20,
@@ -73,6 +73,27 @@ typedef enum {
     FEATURE_OSD = 1 << 29,
 } features_e;
 
+typedef struct systemConfig_s {
+    uint16_t accTaskFrequency;
+    uint16_t attitudeTaskFrequency;
+    uint8_t current_profile_index;
+    uint8_t asyncMode;
+    uint8_t debug_mode;
+    uint8_t i2c_overclock;                  // Overclock i2c Bus for faster IMU readings
+    uint8_t throttle_tilt_compensation_strength;      // the correction that will be applied at throttle_correction_angle.
+    inputFilteringMode_e pwmRxInputFilteringMode;
+    char name[MAX_NAME_LENGTH + 1];
+} systemConfig_t;
+
+PG_DECLARE(systemConfig_t, systemConfig);
+
+typedef struct beeperConfig_s {
+    uint32_t beeper_off_flags;
+    uint32_t preferred_beeper_off_flags;
+} beeperConfig_t;
+
+PG_DECLARE(beeperConfig_t, beeperConfig);
+
 void beeperOffSet(uint32_t mask);
 void beeperOffSetAll(uint8_t beeperCount);
 void beeperOffClear(uint32_t mask);
@@ -84,35 +105,30 @@ void setPreferredBeeperOffMask(uint32_t mask);
 
 void copyCurrentProfileToProfileSlot(uint8_t profileSlotIndex);
 
+void initEEPROM(void);
 void resetEEPROM(void);
-void readEEPROMAndNotify(void);
+void readEEPROM(void);
+void writeEEPROM();
 void ensureEEPROMContainsValidData(void);
 
 void saveConfigAndNotify(void);
 void validateAndFixConfig(void);
-void activateConfig(void);
 
-uint8_t getCurrentProfile(void);
-void changeProfile(uint8_t profileIndex);
+uint8_t getConfigProfile(void);
+bool setConfigProfile(uint8_t profileIndex);
+void setConfigProfileAndWriteEEPROM(uint8_t profileIndex);
 
-void setProfile(uint8_t profileIndex);
-void setControlRateProfile(uint8_t profileIndex);
-struct pidProfile_s;
-void resetPidProfile(struct pidProfile_s *pidProfile);
-
-uint8_t getCurrentControlRateProfile(void);
-void changeControlRateProfile(uint8_t profileIndex);
 bool canSoftwareSerialBeUsed(void);
 void applyAndSaveBoardAlignmentDelta(int16_t roll, int16_t pitch);
 
-uint16_t getCurrentMinthrottle(void);
-struct master_s;
-void targetConfiguration(struct master_s *config);
+void createDefaultConfig(void);
+void resetConfigs(void);
+void targetConfiguration(void);
 
-#ifdef ASYNC_GYRO_PROCESSING
 uint32_t getPidUpdateRate(void);
-uint32_t getGyroUpdateRate(void);
+timeDelta_t getGyroUpdateRate(void);
 uint16_t getAccUpdateRate(void);
+#ifdef ASYNC_GYRO_PROCESSING
 uint16_t getAttitudeUpdateRate(void);
 uint8_t getAsyncMode(void);
 #endif

@@ -30,7 +30,9 @@
 #include "common/axis.h"
 #include "common/maths.h"
 
-#include "drivers/system.h"
+#include "config/feature.h"
+
+#include "drivers/time.h"
 #include "drivers/sensor.h"
 #include "drivers/accgyro.h"
 
@@ -46,12 +48,14 @@
 
 #include "flight/pid.h"
 #include "flight/imu.h"
-#include "flight/navigation_rewrite.h"
-#include "flight/navigation_rewrite_private.h"
+#include "flight/mixer.h"
 
+#include "fc/config.h"
+#include "fc/rc_controls.h"
 #include "fc/runtime_config.h"
-#include "config/config.h"
-#include "config/feature.h"
+
+#include "navigation/navigation.h"
+#include "navigation/navigation_private.h"
 
 
 typedef struct FixedWingLaunchState_s {
@@ -73,16 +77,16 @@ static FixedWingLaunchState_t   launchState;
 static void updateFixedWingLaunchDetector(timeUs_t currentTimeUs)
 {
     const float swingVelocity = (ABS(imuMeasuredRotationBF.A[Z]) > SWING_LAUNCH_MIN_ROTATION_RATE) ? (imuAccelInBodyFrame.A[Y] / imuMeasuredRotationBF.A[Z]) : 0;
-    const bool isForwardAccelerationHigh = (imuAccelInBodyFrame.A[X] > posControl.navConfig->fw.launch_accel_thresh);
+    const bool isForwardAccelerationHigh = (imuAccelInBodyFrame.A[X] > navConfig()->fw.launch_accel_thresh);
     const bool isAircraftAlmostLevel = (calculateCosTiltAngle() >= COS_MAX_LAUNCH_ANGLE);
 
     const bool isBungeeLaunched = isForwardAccelerationHigh && isAircraftAlmostLevel;
-    const bool isSwingLaunched = (swingVelocity > posControl.navConfig->fw.launch_velocity_thresh) && (imuAccelInBodyFrame.A[X] > 0);
+    const bool isSwingLaunched = (swingVelocity > navConfig()->fw.launch_velocity_thresh) && (imuAccelInBodyFrame.A[X] > 0);
 
     if (isBungeeLaunched || isSwingLaunched) {
         launchState.launchDetectionTimeAccum += (currentTimeUs - launchState.launchDetectorPreviosUpdate);
         launchState.launchDetectorPreviosUpdate = currentTimeUs;
-        if (launchState.launchDetectionTimeAccum >= MS2US((uint32_t)posControl.navConfig->fw.launch_time_thresh)) {
+        if (launchState.launchDetectionTimeAccum >= MS2US((uint32_t)navConfig()->fw.launch_time_thresh)) {
             launchState.launchDetected = true;
         }
     }
@@ -118,6 +122,21 @@ bool isFixedWingLaunchFinishedOrAborted(void)
     return launchState.launchFinished;
 }
 
+static void applyFixedWingLaunchIdleLogic(void)
+{
+    // Until motors are started don't use PID I-term
+    pidResetErrorAccumulators();
+
+    // Throttle control logic
+    if (navConfig()->fw.launch_idle_throttle <= motorConfig()->minthrottle) {
+        ENABLE_STATE(NAV_MOTOR_STOP_OR_IDLE);                       // If MOTOR_STOP is enabled mixer will keep motor stopped
+        rcCommand[THROTTLE] = motorConfig()->minthrottle;  // If MOTOR_STOP is disabled, motors will spin at minthrottle
+    }
+    else {
+        rcCommand[THROTTLE] = navConfig()->fw.launch_idle_throttle;
+    }
+}
+
 void applyFixedWingLaunchController(timeUs_t currentTimeUs)
 {
     // Called at PID rate
@@ -127,41 +146,40 @@ void applyFixedWingLaunchController(timeUs_t currentTimeUs)
         const float timeElapsedSinceLaunchMs = US2MS(currentTimeUs- launchState.launchStartedTime);
 
         // If user moves the stick - finish the launch
-        if ((ABS(rcCommand[ROLL]) > posControl.rcControlsConfig->pos_hold_deadband) || (ABS(rcCommand[PITCH]) > posControl.rcControlsConfig->pos_hold_deadband)) {
+        if ((ABS(rcCommand[ROLL]) > rcControlsConfig()->pos_hold_deadband) || (ABS(rcCommand[PITCH]) > rcControlsConfig()->pos_hold_deadband)) {
+            launchState.launchFinished = true;
+        }
+
+        // Abort launch after a pre-set time
+        if (timeElapsedSinceLaunchMs >= navConfig()->fw.launch_timeout) {
             launchState.launchFinished = true;
         }
 
         // Motor control enabled
-        if (launchState.motorControlAllowed) {
-            // Abort launch after a pre-set time
-            if (timeElapsedSinceLaunchMs >= posControl.navConfig->fw.launch_timeout) {
-                launchState.launchFinished = true;
-            }
-
-            // Control throttle
-            if (timeElapsedSinceLaunchMs >= posControl.navConfig->fw.launch_motor_timer) {
-                rcCommand[THROTTLE] = posControl.navConfig->fw.launch_throttle;
+        if (launchState.motorControlAllowed && (timeElapsedSinceLaunchMs >= navConfig()->fw.launch_motor_timer)) {
+            // Increase throttle gradually over `launch_motor_spinup_time` milliseconds
+            if (navConfig()->fw.launch_motor_spinup_time > 0) {
+                const float timeSinceMotorStartMs = constrainf(timeElapsedSinceLaunchMs - navConfig()->fw.launch_motor_timer, 0.0f, navConfig()->fw.launch_motor_spinup_time);
+                const uint16_t minIdleThrottle = MAX(motorConfig()->minthrottle, navConfig()->fw.launch_idle_throttle);
+                rcCommand[THROTTLE] = scaleRangef(timeSinceMotorStartMs,
+                                                  0.0f, navConfig()->fw.launch_motor_spinup_time,
+                                                  minIdleThrottle, navConfig()->fw.launch_throttle);
             }
             else {
-                // Until motors are started don't use PID I-term
-                pidResetErrorAccumulators();
-
-                // Throttle control logic
-                ENABLE_STATE(NAV_MOTOR_STOP_OR_IDLE);                       // If MOTOR_STOP is enabled mixer will keep motor stopped
-                rcCommand[THROTTLE] = posControl.motorConfig->minthrottle;  // If MOTOR_STOP is disabled, motors will spin at minthrottle
+                rcCommand[THROTTLE] = navConfig()->fw.launch_throttle;
             }
+        }
+        else {
+            // Launch idle logic - low throttle and zero out PIDs
+            applyFixedWingLaunchIdleLogic();
         }
     }
     else {
         // We are waiting for launch - update launch detector
         updateFixedWingLaunchDetector(currentTimeUs);
 
-        // Until motors are started don't use PID I-term
-        pidResetErrorAccumulators();
-
-        // Throttle control logic
-        ENABLE_STATE(NAV_MOTOR_STOP_OR_IDLE);                       // If MOTOR_STOP is enabled mixer will keep motor stopped
-        rcCommand[THROTTLE] = posControl.motorConfig->minthrottle;  // If MOTOR_STOP is disabled, motors will spin at minthrottle
+        // Launch idle logic - low throttle and zero out PIDs
+        applyFixedWingLaunchIdleLogic();
     }
 
     // Control beeper
@@ -171,7 +189,7 @@ void applyFixedWingLaunchController(timeUs_t currentTimeUs)
 
     // Lock out controls
     rcCommand[ROLL] = 0;
-    rcCommand[PITCH] = pidAngleToRcCommand(-DEGREES_TO_DECIDEGREES(posControl.navConfig->fw.launch_climb_angle), posControl.pidProfile->max_angle_inclination[FD_PITCH]);
+    rcCommand[PITCH] = pidAngleToRcCommand(-DEGREES_TO_DECIDEGREES(navConfig()->fw.launch_climb_angle), pidProfile()->max_angle_inclination[FD_PITCH]);
     rcCommand[YAW] = 0;
 }
 

@@ -17,8 +17,10 @@
 
 #pragma once
 
-typedef struct servoConfig_s {
-    // PWM values, in milliseconds, common range is 1000-2000 (1ms to 2ms)
-    uint16_t servoCenterPulse;              // This is the value for servos when they should be in the middle. e.g. 1500.
-    uint16_t servoPwmRate;                  // The update rate of servo outputs (50-498Hz)
-} servoConfig_t;
+extern uint8_t cliMode;
+
+struct serialConfig_s;
+void cliInit(const struct serialConfig_s *serialConfig);
+void cliProcess(void);
+struct serialPort_s;
+void cliEnter(struct serialPort_s *serialPort);

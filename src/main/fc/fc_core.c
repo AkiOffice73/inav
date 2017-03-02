@@ -34,7 +34,7 @@
 #include "drivers/light_led.h"
 #include "drivers/gyro_sync.h"
 #include "drivers/serial.h"
-#include "drivers/system.h"
+#include "drivers/time.h"
 
 #include "sensors/sensors.h"
 #include "sensors/diagnostics.h"
@@ -45,22 +45,25 @@
 #include "sensors/gyro.h"
 #include "sensors/battery.h"
 
+#include "fc/cli.h"
+#include "fc/config.h"
+#include "fc/controlrate_profile.h"
+#include "fc/rc_adjustments.h"
 #include "fc/rc_controls.h"
 #include "fc/rc_curves.h"
 #include "fc/runtime_config.h"
 
 #include "io/beeper.h"
 #include "io/dashboard.h"
-#include "io/motors.h"
-#include "io/servos.h"
 #include "io/gimbal.h"
 #include "io/gps.h"
 #include "io/serial.h"
-#include "io/serial_cli.h"
 #include "io/statusindicator.h"
 #include "io/asyncfatfs/asyncfatfs.h"
 
 #include "msp/msp_serial.h"
+
+#include "navigation/navigation.h"
 
 #include "rx/rx.h"
 #include "rx/msp.h"
@@ -73,12 +76,9 @@
 #include "flight/servos.h"
 #include "flight/pid.h"
 #include "flight/imu.h"
-#include "flight/failsafe.h"
-#include "flight/navigation_rewrite.h"
 
-#include "config/config.h"
-#include "config/config_profile.h"
-#include "config/config_master.h"
+#include "flight/failsafe.h"
+
 #include "config/feature.h"
 
 // June 2013     V2.2-dev
@@ -91,7 +91,7 @@ enum {
 
 #define GYRO_WATCHDOG_DELAY 100  // Watchdog for boards without interrupt for gyro
 
-uint16_t cycleTime = 0;         // this is the number in micro second to achieve a full loop, it can differ a little and is taken into account in the PID loop
+timeDelta_t cycleTime = 0;         // this is the number in micro second to achieve a full loop, it can differ a little and is taken into account in the PID loop
 
 float dT;
 
@@ -107,14 +107,14 @@ static bool isRXDataNew;
 bool isCalibrating(void)
 {
 #ifdef BARO
-    if (sensors(SENSOR_BARO) && !isBaroCalibrationComplete()) {
+    if (sensors(SENSOR_BARO) && !baroIsCalibrationComplete()) {
         return true;
     }
 #endif
 
     // Note: compass calibration is handled completely differently, outside of the main loop, see f.CALIBRATE_MAG
 
-    return (!isAccelerationCalibrationComplete() && sensors(SENSOR_ACC)) || (!isGyroCalibrationComplete());
+    return (!accIsCalibrationComplete() && sensors(SENSOR_ACC)) || (!gyroIsCalibrationComplete());
 }
 
 int16_t getAxisRcCommand(int16_t rawData, int16_t rate, int16_t deadband)
@@ -173,26 +173,34 @@ static void updatePreArmingChecks(void)
 
 void annexCode(void)
 {
-
     int32_t throttleValue;
 
-    // Compute ROLL PITCH and YAW command
-    rcCommand[ROLL] = getAxisRcCommand(rcData[ROLL], currentControlRateProfile->rcExpo8, currentProfile->rcControlsConfig.deadband);
-    rcCommand[PITCH] = getAxisRcCommand(rcData[PITCH], currentControlRateProfile->rcExpo8, currentProfile->rcControlsConfig.deadband);
-    rcCommand[YAW] = -getAxisRcCommand(rcData[YAW], currentControlRateProfile->rcYawExpo8, currentProfile->rcControlsConfig.yaw_deadband);
+    if (failsafeIsActive()) {
+        // Failsafe will apply rcCommand for us
+        failsafeApplyControlInput();
+    }
+    else {
+        // Compute ROLL PITCH and YAW command
+        rcCommand[ROLL] = getAxisRcCommand(rcData[ROLL], currentControlRateProfile->rcExpo8, rcControlsConfig()->deadband);
+        rcCommand[PITCH] = getAxisRcCommand(rcData[PITCH], currentControlRateProfile->rcExpo8, rcControlsConfig()->deadband);
+        rcCommand[YAW] = -getAxisRcCommand(rcData[YAW], currentControlRateProfile->rcYawExpo8, rcControlsConfig()->yaw_deadband);
 
-    //Compute THROTTLE command
-    throttleValue = constrain(rcData[THROTTLE], rxConfig()->mincheck, PWM_RANGE_MAX);
-    throttleValue = (uint32_t)(throttleValue - rxConfig()->mincheck) * PWM_RANGE_MIN / (PWM_RANGE_MAX - rxConfig()->mincheck);       // [MINCHECK;2000] -> [0;1000]
-    rcCommand[THROTTLE] = rcLookupThrottle(throttleValue);
+        //Compute THROTTLE command
+        throttleValue = constrain(rcData[THROTTLE], rxConfig()->mincheck, PWM_RANGE_MAX);
+        throttleValue = (uint32_t)(throttleValue - rxConfig()->mincheck) * PWM_RANGE_MIN / (PWM_RANGE_MAX - rxConfig()->mincheck);       // [MINCHECK;2000] -> [0;1000]
+        rcCommand[THROTTLE] = rcLookupThrottle(throttleValue);
 
-    if (FLIGHT_MODE(HEADFREE_MODE)) {
-        const float radDiff = degreesToRadians(DECIDEGREES_TO_DEGREES(attitude.values.yaw) - headFreeModeHold);
-        const float cosDiff = cos_approx(radDiff);
-        const float sinDiff = sin_approx(radDiff);
-        const int16_t rcCommand_PITCH = rcCommand[PITCH] * cosDiff + rcCommand[ROLL] * sinDiff;
-        rcCommand[ROLL] = rcCommand[ROLL] * cosDiff - rcCommand[PITCH] * sinDiff;
-        rcCommand[PITCH] = rcCommand_PITCH;
+        // Signal updated rcCommand values to Failsafe system
+        failsafeUpdateRcCommandValues();
+
+        if (FLIGHT_MODE(HEADFREE_MODE)) {
+            const float radDiff = degreesToRadians(DECIDEGREES_TO_DEGREES(attitude.values.yaw) - headFreeModeHold);
+            const float cosDiff = cos_approx(radDiff);
+            const float sinDiff = sin_approx(radDiff);
+            const int16_t rcCommand_PITCH = rcCommand[PITCH] * cosDiff + rcCommand[ROLL] * sinDiff;
+            rcCommand[ROLL] = rcCommand[ROLL] * cosDiff - rcCommand[PITCH] * sinDiff;
+            rcCommand[PITCH] = rcCommand_PITCH;
+        }
     }
 
     if (ARMING_FLAG(ARMED)) {
@@ -304,16 +312,14 @@ void processRx(timeUs_t currentTimeUs)
 
     updateRSSI(currentTimeUs);
 
-    if (feature(FEATURE_FAILSAFE)) {
-
-        if (currentTimeUs > FAILSAFE_POWER_ON_DELAY_US && !failsafeIsMonitoring()) {
-            failsafeStartMonitoring();
-        }
-
-        failsafeUpdateState();
+    // Update failsafe monitoring system
+    if (currentTimeUs > FAILSAFE_POWER_ON_DELAY_US && !failsafeIsMonitoring()) {
+        failsafeStartMonitoring();
     }
 
-    throttleStatus_e throttleStatus = calculateThrottleStatus(&masterConfig.rxConfig, flight3DConfig()->deadband3d_throttle);
+    failsafeUpdateState();
+
+    const throttleStatus_e throttleStatus = calculateThrottleStatus();
 
     // When armed and motors aren't spinning, do beeps and then disarm
     // board after delay so users without buzzer won't lose fingers.
@@ -359,18 +365,18 @@ void processRx(timeUs_t currentTimeUs)
         }
     }
 
-    processRcStickPositions(&masterConfig.rxConfig, throttleStatus, armingConfig()->disarm_kill_switch, armingConfig()->fixed_wing_auto_arm);
+    processRcStickPositions(throttleStatus, armingConfig()->disarm_kill_switch, armingConfig()->fixed_wing_auto_arm);
 
-    updateActivatedModes(currentProfile->modeActivationConditions, currentProfile->modeActivationOperator);
+    updateActivatedModes();
 
     if (!cliMode) {
-        updateAdjustmentStates(currentProfile->adjustmentRanges);
-        processRcAdjustments(currentControlRateProfile, &masterConfig.rxConfig);
+        updateAdjustmentStates();
+        processRcAdjustments(CONST_CAST(controlRateConfig_t*, currentControlRateProfile));
     }
 
     bool canUseHorizonMode = true;
 
-    if ((IS_RC_MODE_ACTIVE(BOXANGLE) || (feature(FEATURE_FAILSAFE) && failsafeIsActive()) || naivationRequiresAngleMode()) && sensors(SENSOR_ACC)) {
+    if ((IS_RC_MODE_ACTIVE(BOXANGLE) || failsafeRequiresAngleMode() || naivationRequiresAngleMode()) && sensors(SENSOR_ACC)) {
         // bumpless transfer to Level mode
         canUseHorizonMode = false;
 
@@ -398,6 +404,7 @@ void processRx(timeUs_t currentTimeUs)
         LED1_OFF;
     }
 
+#ifdef USE_FLM_HEADLOCK
     /* Heading lock mode */
     if (IS_RC_MODE_ACTIVE(BOXHEADINGLOCK)) {
         if (!FLIGHT_MODE(HEADING_LOCK)) {
@@ -406,7 +413,9 @@ void processRx(timeUs_t currentTimeUs)
     } else {
         DISABLE_FLIGHT_MODE(HEADING_LOCK);
     }
+#endif
 
+#ifdef USE_SERVOS
     /* Flaperon mode */
     if (IS_RC_MODE_ACTIVE(BOXFLAPERON) && STATE(FLAPERON_AVAILABLE)) {
         if (!FLIGHT_MODE(FLAPERON)) {
@@ -415,7 +424,9 @@ void processRx(timeUs_t currentTimeUs)
     } else {
         DISABLE_FLIGHT_MODE(FLAPERON);
     }
+#endif
 
+#ifdef USE_FLM_TURN_ASSIST
     /* Turn assistant mode */
     if (IS_RC_MODE_ACTIVE(BOXTURNASSIST)) {
         if (!FLIGHT_MODE(TURN_ASSISTANT)) {
@@ -424,6 +435,7 @@ void processRx(timeUs_t currentTimeUs)
     } else {
         DISABLE_FLIGHT_MODE(TURN_ASSISTANT);
     }
+#endif
 
 #if defined(MAG)
     if (sensors(SENSOR_ACC) || sensors(SENSOR_MAG)) {
@@ -465,7 +477,7 @@ void processRx(timeUs_t currentTimeUs)
     else {
         if (throttleStatus == THROTTLE_LOW) {
             if (IS_RC_MODE_ACTIVE(BOXAIRMODE) && !failsafeIsActive() && ARMING_FLAG(ARMED)) {
-                rollPitchStatus_e rollPitchStatus = calculateRollPitchCenterStatus(&masterConfig.rxConfig);
+                rollPitchStatus_e rollPitchStatus = calculateRollPitchCenterStatus();
 
                 // ANTI_WINDUP at centred stick with MOTOR_STOP is needed on MRs and not needed on FWs
                 if ((rollPitchStatus == CENTERED) || (feature(FEATURE_MOTOR_STOP) && !STATE(FIXED_WING))) {
@@ -515,16 +527,12 @@ void filterRc(bool isRXDataNew)
 
     // Calculate average cycle time (1Hz LPF on cycle time)
     if (!filterInitialised) {
-    #ifdef ASYNC_GYRO_PROCESSING
         biquadFilterInitLPF(&filteredCycleTimeState, 1, getPidUpdateRate());
-    #else
-        biquadFilterInitLPF(&filteredCycleTimeState, 1, gyro.targetLooptime);
-    #endif
         filterInitialised = true;
     }
 
-    const uint16_t filteredCycleTime = biquadFilterApply(&filteredCycleTimeState, (float) cycleTime);
-    rcInterpolationFactor = rxRefreshRate() / filteredCycleTime + 1;
+    const timeDelta_t filteredCycleTime = biquadFilterApply(&filteredCycleTimeState, (float) cycleTime);
+    rcInterpolationFactor = rxGetRefreshRate() / filteredCycleTime + 1;
 
     if (isRXDataNew) {
         for (int channel=0; channel < 4; channel++) {
@@ -549,17 +557,13 @@ void filterRc(bool isRXDataNew)
 
 // Function for loop trigger
 void taskGyro(timeUs_t currentTimeUs) {
-    // getTaskDeltaTime() returns delta time freezed at the moment of entering the scheduler. currentTime is freezed at the very same point.
+    // getTaskDeltaTime() returns delta time frozen at the moment of entering the scheduler. currentTime is frozen at the very same point.
     // To make busy-waiting timeout work we need to account for time spent within busy-waiting loop
-    const timeUs_t currentDeltaTime = getTaskDeltaTime(TASK_SELF);
+    const timeDelta_t currentDeltaTime = getTaskDeltaTime(TASK_SELF);
 
     if (gyroConfig()->gyroSync) {
         while (true) {
-        #ifdef ASYNC_GYRO_PROCESSING
-            if (gyroSyncCheckUpdate(&gyro.dev) || ((currentDeltaTime + (micros() - currentTimeUs)) >= (getGyroUpdateRate() + GYRO_WATCHDOG_DELAY))) {
-        #else
-            if (gyroSyncCheckUpdate(&gyro.dev) || ((currentDeltaTime + (micros() - currentTimeUs)) >= (gyro.targetLooptime + GYRO_WATCHDOG_DELAY))) {
-        #endif
+            if (gyroSyncCheckUpdate(&gyro.dev) || ((currentDeltaTime + cmpTimeUs(micros(), currentTimeUs)) >= (getGyroUpdateRate() + GYRO_WATCHDOG_DELAY))) {
                 break;
             }
         }
@@ -570,8 +574,18 @@ void taskGyro(timeUs_t currentTimeUs) {
 
 #ifdef ASYNC_GYRO_PROCESSING
     /* Update IMU for better accuracy */
-    imuUpdateGyroscope(currentDeltaTime + (micros() - currentTimeUs));
+    imuUpdateGyroscope((timeUs_t)currentDeltaTime + (micros() - currentTimeUs));
 #endif
+}
+
+static float calculateThrottleTiltCompensationFactor(uint8_t throttleTiltCompensationStrength)
+{
+    if (throttleTiltCompensationStrength) {
+        float tiltCompFactor = 1.0f / constrainf(calculateCosTiltAngle(), 0.6f, 1.0f);  // max tilt about 50 deg
+        return 1.0f + (tiltCompFactor - 1.0f) * (throttleTiltCompensationStrength / 100.f);
+    } else {
+        return 1.0f;
+    }
 }
 
 void taskMainPidLoop(timeUs_t currentTimeUs)
@@ -622,7 +636,7 @@ void taskMainPidLoop(timeUs_t currentTimeUs)
     if (isUsingSticksForArming() && rcData[THROTTLE] <= rxConfig()->mincheck
 #ifndef USE_QUAD_MIXER_ONLY
 #ifdef USE_SERVOS
-            && !((mixerConfig()->mixerMode == MIXER_TRI || mixerConfig()->mixerMode == MIXER_CUSTOM_TRI) && servoMixerConfig()->tri_unarmed_servo)
+            && !((mixerConfig()->mixerMode == MIXER_TRI || mixerConfig()->mixerMode == MIXER_CUSTOM_TRI) && servoConfig()->tri_unarmed_servo)
 #endif
             && mixerConfig()->mixerMode != MIXER_AIRPLANE
             && mixerConfig()->mixerMode != MIXER_FLYING_WING
@@ -639,8 +653,8 @@ void taskMainPidLoop(timeUs_t currentTimeUs)
         if (navigationRequiresThrottleTiltCompensation()) {
             thrTiltCompStrength = 100;
         }
-        else if (currentProfile->throttle_tilt_compensation_strength && (FLIGHT_MODE(ANGLE_MODE) || FLIGHT_MODE(HORIZON_MODE))) {
-            thrTiltCompStrength = currentProfile->throttle_tilt_compensation_strength;
+        else if (systemConfig()->throttle_tilt_compensation_strength && (FLIGHT_MODE(ANGLE_MODE) || FLIGHT_MODE(HORIZON_MODE))) {
+            thrTiltCompStrength = systemConfig()->throttle_tilt_compensation_strength;
         }
 
         if (thrTiltCompStrength) {
@@ -655,10 +669,10 @@ void taskMainPidLoop(timeUs_t currentTimeUs)
     }
 
     // Update PID coefficients
-    updatePIDCoefficients(&currentProfile->pidProfile, currentControlRateProfile, &masterConfig.motorConfig);
+    updatePIDCoefficients();
 
     // Calculate stabilisation
-    pidController(&currentProfile->pidProfile, currentControlRateProfile, &masterConfig.rxConfig);
+    pidController();
 
 #ifdef HIL
     if (hilActive) {
@@ -670,20 +684,15 @@ void taskMainPidLoop(timeUs_t currentTimeUs)
     mixTable();
 
 #ifdef USE_SERVOS
-
     if (isMixerUsingServos()) {
-        servoMixer(currentProfile->flaperon_throw_offset, currentProfile->flaperon_throw_inverted);
+        servoMixer();
     }
-
     if (feature(FEATURE_SERVO_TILT)) {
         processServoTilt();
     }
-
     processServoAutotrim();
-
     //Servos should be filtered or written only when mixer is using servos or special feaures are enabled
     if (isServoOutputEnabled()) {
-        filterServos();
         writeServos();
     }
 #endif
@@ -693,7 +702,7 @@ void taskMainPidLoop(timeUs_t currentTimeUs)
     }
 
 #ifdef USE_SDCARD
-        afatfs_poll();
+    afatfs_poll();
 #endif
 
 #ifdef BLACKBOX
@@ -701,14 +710,13 @@ void taskMainPidLoop(timeUs_t currentTimeUs)
         handleBlackbox(micros());
     }
 #endif
-
 }
 
-bool taskUpdateRxCheck(timeUs_t currentTimeUs, uint32_t currentDeltaTime)
+bool taskUpdateRxCheck(timeUs_t currentTimeUs, timeDelta_t currentDeltaTime)
 {
     UNUSED(currentDeltaTime);
 
-    return updateRx(currentTimeUs);
+    return rxUpdateCheck(currentTimeUs, currentDeltaTime);
 }
 
 void taskUpdateRxMain(timeUs_t currentTimeUs)

@@ -18,15 +18,10 @@
 #pragma once
 
 #include "common/maths.h"
-#include "common/filter.h"
 
-#include "fc/rc_controls.h"
-#include "io/motors.h"
-#include "io/gps.h"
-
-#include "flight/pid.h"
 #include "flight/failsafe.h"
-#include "flight/mixer.h"
+
+#include "io/gps.h"
 
 /* GPS Home location data */
 extern gpsLocation_t        GPS_home;
@@ -64,35 +59,42 @@ enum {
     NAV_HEADING_CONTROL_MANUAL
 };
 
+enum {
+    NAV_RESET_ALTITUDE_NEVER = 0,
+    NAV_RESET_ALTITUDE_ON_FIRST_ARM,
+    NAV_RESET_ALTITUDE_ON_EACH_ARM,
+};
+
+typedef struct positionEstimationConfig_s {
+    uint8_t automatic_mag_declination;
+    uint8_t reset_altitude_type;
+    uint8_t accz_unarmed_cal;
+    uint8_t use_gps_velned;
+    uint16_t gps_delay_ms;
+
+    float w_z_baro_p;   // Weight (cutoff frequency) for barometer altitude measurements
+
+    float w_z_sonar_p;  // Weight (cutoff frequency) for sonar altitude measurements
+    float w_z_sonar_v;  // Weight (cutoff frequency) for sonar velocity measurements
+
+    float w_z_gps_p;    // GPS altitude data is very noisy and should be used only on airplanes
+    float w_z_gps_v;    // Weight (cutoff frequency) for GPS climb rate measurements
+
+    float w_xy_gps_p;   // Weight (cutoff frequency) for GPS position measurements
+    float w_xy_gps_v;   // Weight (cutoff frequency) for GPS velocity measurements
+
+    float w_z_res_v;    // When velocity sources lost slowly decrease estimated velocity with this weight
+    float w_xy_res_v;
+
+    float w_acc_bias;   // Weight (cutoff frequency) for accelerometer bias estimation. 0 to disable.
+
+    float max_eph_epv;  // Max estimated position error acceptable for estimation (cm)
+    float baro_epv;     // Baro position error
+} positionEstimationConfig_t;
+
+PG_DECLARE(positionEstimationConfig_t, positionEstimationConfig);
+
 typedef struct navConfig_s {
-    struct {
-#if defined(NAV_AUTO_MAG_DECLINATION)
-        uint8_t automatic_mag_declination;
-#endif
-        uint8_t gps_min_sats;
-        uint8_t accz_unarmed_cal;
-        uint8_t use_gps_velned;
-        uint16_t gps_delay_ms;
-
-        float w_z_baro_p;   // Weight (cutoff frequency) for barometer altitude measurements
-
-        float w_z_sonar_p;  // Weight (cutoff frequency) for sonar altitude measurements
-        float w_z_sonar_v;  // Weight (cutoff frequency) for sonar velocity measurements
-
-        float w_z_gps_p;    // GPS altitude data is very noisy and should be used only on airplanes
-        float w_z_gps_v;    // Weight (cutoff frequency) for GPS climb rate measurements
-
-        float w_xy_gps_p;   // Weight (cutoff frequency) for GPS position measurements
-        float w_xy_gps_v;   // Weight (cutoff frequency) for GPS velocity measurements
-
-        float w_z_res_v;    // When velocity sources lost slowly decrease estimated velocity with this weight
-        float w_xy_res_v;
-
-        float w_acc_bias;   // Weight (cutoff frequency) for accelerometer bias estimation. 0 to disable.
-
-        float max_eph_epv;  // Max estimated position error acceptable for estimation (cm)
-        float baro_epv;     // Baro position error
-    } estimation;
 
     struct {
         struct {
@@ -103,10 +105,13 @@ typedef struct navConfig_s {
             uint8_t rth_climb_first;            // Controls the logic for initial RTH climbout
             uint8_t rth_tail_first;             // Return to home tail first
             uint8_t disarm_on_landing;          //
+            uint8_t rth_allow_landing;          // Enable landing as last stage of RTH
+            uint8_t rth_climb_ignore_emerg;     // Option to ignore GPS loss on initial climb stage of RTH
         } flags;
 
         uint8_t  pos_failure_timeout;           // Time to wait before switching to emergency landing (0 - disable)
         uint16_t waypoint_radius;               // if we are within this distance to a waypoint then we consider it reached (distance is in cm)
+        uint16_t waypoint_safe_distance;        // Waypoint mission sanity check distance
         uint16_t max_speed;                     // autonomous navigation speed cm/sec
         uint16_t max_climb_rate;                // max vertical speed limitation cm/sec
         uint16_t max_manual_speed;              // manual velocity control max horizontal speed
@@ -117,6 +122,7 @@ typedef struct navConfig_s {
         uint16_t emerg_descent_rate;            // emergency landing descent rate
         uint16_t rth_altitude;                  // altitude to maintain when RTH is active (depends on rth_alt_control_mode) (cm)
         uint16_t min_rth_distance;              // 0 Disables. Minimal distance for RTL in cm, otherwise it will just autoland
+        uint16_t rth_abort_threshold;           // Initiate emergency landing if during RTH we get this much [cm] away from home
     } general;
 
     struct {
@@ -139,12 +145,16 @@ typedef struct navConfig_s {
         uint16_t launch_velocity_thresh;     // Velocity threshold for swing launch detection
         uint16_t launch_accel_thresh;        // Acceleration threshold for launch detection (cm/s/s)
         uint16_t launch_time_thresh;         // Time threshold for launch detection (ms)
+        uint16_t launch_idle_throttle;       // Throttle to keep at launch idle
         uint16_t launch_throttle;            // Launch throttle
         uint16_t launch_motor_timer;         // Time to wait before setting launch_throttle (ms)
+        uint16_t launch_motor_spinup_time;   // Time to speed-up motors from idle to launch_throttle (ESC desync prevention)
         uint16_t launch_timeout;             // Launch timeout to disable launch mode and swith to normal flight (ms)
         uint8_t  launch_climb_angle;         // Target climb angle for launch (deg)
     } fw;
 } navConfig_t;
+
+PG_DECLARE(navConfig_t, navConfig);
 
 typedef struct gpsOrigin_s {
     bool    valid;
@@ -231,18 +241,8 @@ typedef struct {
     navWaypointActions_e    activeWpAction;
 } navSystemStatus_t;
 
-void navigationUsePIDs(pidProfile_t *pidProfile);
-void navigationUseConfig(navConfig_t *navConfigToUse);
-void navigationUseRcControlsConfig(rcControlsConfig_t *initialRcControlsConfig);
-void navigationUseRxConfig(rxConfig_t * initialRxConfig);
-void navigationUsemotorConfig(motorConfig_t * initialmotorConfig);
-void navigationUseFlight3DConfig(flight3DConfig_t * initialFlight3DConfig);
-void navigationInit(navConfig_t *initialnavConfig,
-                    pidProfile_t *initialPidProfile,
-                    rcControlsConfig_t *initialRcControlsConfig,
-                    rxConfig_t * initialRxConfig,
-                    flight3DConfig_t * initialFlight3DConfig,
-                    motorConfig_t * initialmotorConfig);
+void navigationUsePIDs(void);
+void navigationInit(void);
 
 /* Navigation system updates */
 void updateWaypointsAndNavigationMode(void);
@@ -261,11 +261,14 @@ bool navigationPositionEstimateIsHealthy(void);
 /* Access to estimated position and velocity */
 float getEstimatedActualVelocity(int axis);
 float getEstimatedActualPosition(int axis);
+int32_t getTotalTravelDistance(void);
 
 /* Waypoint list access functions */
 void getWaypoint(uint8_t wpNumber, navWaypoint_t * wpData);
 void setWaypoint(uint8_t wpNumber, const navWaypoint_t * wpData);
 void resetWaypointList(void);
+bool loadNonVolatileWaypointList(void);
+bool saveNonVolatileWaypointList(void);
 
 /* Geodetic functions */
 typedef enum {
