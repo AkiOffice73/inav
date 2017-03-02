@@ -188,6 +188,16 @@ void taskUpdateSonar(timeUs_t currentTimeUs)
     //updatePositionEstimator_SonarTopic(currentTimeUs);
 }
 #endif
+#ifdef TOFR
+void taskUpdateTofr(timeUs_t currentTimeUs)
+{
+	UNUSED(currentTimeUs);
+
+	//if (sensors(SENSOR_TOFR)) {
+		tofrUpdate();
+	//}
+}
+#endif
 
 #ifdef USE_DASHBOARD
 void taskDashboardUpdate(timeUs_t currentTimeUs)
@@ -448,12 +458,21 @@ cfTask_t cfTasks[TASK_COUNT] = {
 #endif
 
 #ifdef SONAR
-    [TASK_SONAR] = {
-        .taskName = "SONAR",
-        .taskFunc = taskUpdateSonar,
-        .desiredPeriod = TASK_PERIOD_MS(70),                 // every 70 ms, approximately 14 Hz
-        .staticPriority = TASK_PRIORITY_MEDIUM,
-    },
+	[TASK_SONAR] = {
+			.taskName = "SONAR",
+			.taskFunc = taskUpdateSonar,
+			.desiredPeriod = TASK_PERIOD_MS(70),                 // every 70 ms, approximately 14 Hz
+			.staticPriority = TASK_PRIORITY_MEDIUM,
+		},
+#endif
+
+#ifdef TOFR
+	[TASK_TOFR] = {
+		.taskName = "TOFR",
+		.taskFunc = taskUpdateTofr,
+		.desiredPeriod = TASK_PERIOD_MS(50),                 // every 50 ms, approximately 20 Hz
+		.staticPriority = TASK_PRIORITY_MEDIUM,
+	},
 #endif
 
 #ifdef USE_DASHBOARD

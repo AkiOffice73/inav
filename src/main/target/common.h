@@ -17,6 +17,11 @@
 
 #pragma once
 
+//debug define SPF3 FLASH_SIZE=256
+#ifndef FLASH_SIZE
+#define FLASH_SIZE 256
+#endif // !FLASH_SIZE
+
 #define I2C1_OVERCLOCK false
 #define I2C2_OVERCLOCK false
 #define USE_I2C_PULLUP          // Enable built-in pullups on all boards in case external ones are too week
