@@ -72,7 +72,7 @@ PG_RESET_TEMPLATE(navConfig_t, navConfig,
 
         .flags = {
             .use_thr_mid_for_althold = 0,
-            .extra_arming_safety = 1,
+            .extra_arming_safety = 0,
             .user_control_mode = NAV_GPS_ATTI,
             .rth_alt_control_mode = NAV_RTH_AT_LEAST_ALT,
             .rth_climb_first = 1,                   // Climb first, turn after reaching safe altitude
@@ -95,7 +95,7 @@ PG_RESET_TEMPLATE(navConfig_t, navConfig,
         .land_slowdown_maxalt = 2000, // 20 meters of altitude
         .emerg_descent_rate = 500,    // 5 m/s
         .min_rth_distance = 500,      // If closer than 5m - land immediately
-        .rth_altitude = 1000,         // 10m
+        .rth_altitude = 500,         // 10m->5m
         .rth_abort_threshold = 50000, // 500m - should be safe for all aircraft
     },
 

@@ -35,6 +35,7 @@
 
 #include "cms/cms.h"
 
+#include "drivers/system.h"
 #include "drivers/logging.h"
 #include "drivers/nvic.h"
 #include "drivers/sensor.h"
@@ -49,7 +50,6 @@
 #include "drivers/serial.h"
 #include "drivers/serial_softserial.h"
 #include "drivers/serial_uart.h"
-#include "drivers/system.h"
 #include "drivers/accgyro.h"
 #include "drivers/compass.h"
 #include "drivers/pwm_mapping.h"
@@ -66,6 +66,7 @@
 #include "drivers/io.h"
 #include "drivers/exti.h"
 #include "drivers/io_pca9685.h"
+#include "xf/drivers/tofr_aip01.h"
 
 #include "fc/cli.h"
 #include "fc/fc_tasks.h"
@@ -102,6 +103,7 @@
 #include "sensors/pitotmeter.h"
 #include "sensors/initialisation.h"
 #include "sensors/rangefinder.h"
+#include "xf/sensors/tofr.h"
 
 #include "telemetry/telemetry.h"
 
@@ -591,6 +593,12 @@ void init(void)
 #endif
 #ifdef PITOT
     pitotSetCalibrationCycles(CALIBRATING_PITOT_CYCLES);
+#endif
+
+#ifdef TOFR
+	if (feature(FEATURE_TOFR)) {
+		tofrInit();
+	}
 #endif
 
     // start all timers

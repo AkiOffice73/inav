@@ -100,7 +100,7 @@ PG_RESET_TEMPLATE(imuConfig_t, imuConfig,
     .dcm_ki_acc = 50,               // 0.005 * 10000
     .dcm_kp_mag = 10000,            // 1.00 * 10000
     .dcm_ki_mag = 0,                // 0.00 * 10000
-    .small_angle = 25
+    .small_angle = 180
 
 );
 

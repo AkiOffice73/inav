@@ -62,6 +62,7 @@ typedef enum {
 #ifdef USE_FLM_TURN_ASSIST
     TURN_ASSISTANT  = (1 << 15),
 #endif
+	AVOIDANCE_MODE	= (1 << 16),
 } flightModeFlags_e;
 
 extern uint32_t flightModeFlags;
@@ -81,7 +82,8 @@ typedef enum {
     NAV_MOTOR_STOP_OR_IDLE  = (1 << 7),     // navigation requests MOTOR_STOP or motor idle regardless of throttle stick, will only activate if MOTOR_STOP feature is available
     COMPASS_CALIBRATED      = (1 << 8),
     ACCELEROMETER_CALIBRATED= (1 << 9),
-    PWM_DRIVER_AVAILABLE    = (1 << 10)
+    PWM_DRIVER_AVAILABLE    = (1 << 10),
+	OBSTACLE_DETECTED		= (1 << 11),
 } stateFlags_t;
 
 #define DISABLE_STATE(mask) (stateFlags &= ~(mask))

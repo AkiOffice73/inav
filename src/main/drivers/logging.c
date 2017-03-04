@@ -56,6 +56,7 @@ static const char *     eventDescription[BOOT_EVENT_CODE_COUNT] = {
     [BOOT_EVENT_TIMER_CH_SKIPPED]           = "TIMER_CHANNEL_SKIPPED",
     [BOOT_EVENT_TIMER_CH_MAPPED]            = "TIMER_CHANNEL_MAPPED",
     [BOOT_EVENT_PITOT_DETECTION]            = "PITOT_DETECTION",
+	[BOOT_EVENT_TOFR_DETECTION]				= "TOFR_DETECTION",
 };
 
 const char * getBootlogEventDescription(bootLogEventCode_e eventCode)

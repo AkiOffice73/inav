@@ -70,7 +70,8 @@ typedef enum {
     FEATURE_SOFTSPI = 1 << 26,
     FEATURE_PWM_SERVO_DRIVER = 1 << 27,
     FEATURE_PWM_OUTPUT_ENABLE = 1 << 28,
-    FEATURE_OSD = 1 << 29,
+	FEATURE_OSD = 1 << 29,
+	FEATURE_TOFR = 1 << 30,
 } features_e;
 
 typedef struct systemConfig_s {

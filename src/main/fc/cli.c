@@ -50,6 +50,7 @@ extern uint8_t __config_end;
 #include "config/parameter_group.h"
 #include "config/parameter_group_ids.h"
 
+#include "drivers/system.h"
 #include "drivers/accgyro.h"
 #include "drivers/buf_writer.h"
 #include "drivers/bus_i2c.h"
@@ -62,9 +63,10 @@ extern uint8_t __config_end;
 #include "drivers/sensor.h"
 #include "drivers/serial.h"
 #include "drivers/stack_check.h"
-#include "drivers/system.h"
 #include "drivers/time.h"
 #include "drivers/timer.h"
+#include "drivers/gpio.h"
+#include "xf/drivers/tofr_aip01.h"
 
 #include "fc/cli.h"
 #include "fc/config.h"
@@ -105,6 +107,7 @@ extern uint8_t __config_end;
 #include "sensors/pitotmeter.h"
 #include "sensors/rangefinder.h"
 #include "sensors/sensors.h"
+#include "xf/sensors/tofr.h"
 
 #include "telemetry/frsky.h"
 #include "telemetry/telemetry.h"
@@ -152,7 +155,7 @@ static const char * const featureNames[] = {
     "", "TELEMETRY", "CURRENT_METER", "3D", "RX_PARALLEL_PWM",
     "RX_MSP", "RSSI_ADC", "LED_STRIP", "DASHBOARD", "",
     "BLACKBOX", "CHANNEL_FORWARDING", "TRANSPONDER", "AIRMODE",
-    "SUPEREXPO", "VTX", "RX_SPI", "SOFTSPI", "PWM_SERVO_DRIVER", "PWM_OUTPUT_ENABLE", "OSD", NULL
+    "SUPEREXPO", "VTX", "RX_SPI", "SOFTSPI", "PWM_SERVO_DRIVER", "PWM_OUTPUT_ENABLE", "OSD", "TOFR", NULL
 };
 
 /* Sensor names (used in lookup tables for *_hardware settings and in status command output) */
@@ -3504,6 +3507,223 @@ static void cliDiff(char *cmdline)
     printConfig(cmdline, true);
 }
 
+//-----------------------------------------------------------------------------
+uint8_t AIP01_Addr = 0x30;
+uint8_t AIP01_REG_SLAVE_DEVICE_ADDRESS = 0x8a;
+
+uint8_t AIP01_ReadByte(uint8_t reg)
+{
+	uint8_t in_addr = AIP01_Addr;
+	uint8_t buf[1];
+	buf[0] = 0;
+	i2cRead(I2C_DEVICE,in_addr, reg, 1, buf);
+	return buf[0];
+}
+uint8_t AIP01_GetDeviceAddr()
+{
+	return AIP01_ReadByte(AIP01_REG_SLAVE_DEVICE_ADDRESS);
+}
+
+uint8_t AIP01_GetRevisionId()
+{
+	return AIP01_ReadByte(AIP01_REG_IDENTIFICATION_REVISION_ID);
+}
+uint8_t AIP01_GetModelId()
+{
+	return AIP01_ReadByte(AIP01_REG_IDENTIFICATION_MODEL_ID);
+}
+
+
+static void cliInitRangefinder(char *cmdline) //#20160822 phis
+{
+	cliPrint("A\r\n");
+	if (isEmpty(cmdline)) {
+		cliPrint("isEmpty\r\n");
+
+		cliPrint("init ? -- Lo -- Hi\r\n");
+		gpio_config_t gpioCfg;
+		gpioCfg.mode = GPIO_Mode_OUT;
+		gpioCfg.pin = GPIO_Pin_1; //PA1
+		gpioInit(GPIOA, &gpioCfg);
+
+		digitalLo(GPIOA, gpioCfg.pin);
+		delay(100);
+		digitalHi(GPIOA, gpioCfg.pin);
+
+		delay(100);
+
+		uint8_t in_addr = 0x29; //default
+		i2cWrite(I2C_DEVICE, in_addr, AIP01_REG_I2C_SLAVE_DEVICE_ADDRESS, 0x29+2);
+
+		cliPrint("Init Rangefinder\r\n");
+		delay(100);
+	}
+	else
+	{
+		tofrInit();
+	}
+
+	cliPrompt();
+
+}
+uint16_t makeuint16(uint16_t lsb, uint16_t msb)
+{
+	return ((msb & 0xFF) << 8) | (lsb & 0xFF);
+}
+static void cliGetRangefinderData(char *cmdline) //#20160822 phis
+{
+	if (isEmpty(cmdline)) {
+		cliPrint("tof Info:\r\n");
+		for (int i = 0; i < TOFR_DEVICE_COUNT; i++)
+		{
+			cliPrintf("tof index:%d , enable=%d\r\n", i, tofr[i].enable);
+			cliPrintf("XSDN pin = %d , Addr = %d , Data = %d", tofr[i].device.i2cXsdnGpioCfg.pin, tofr[i].device.i2cAddr, tofr[i].data.range);
+			if (tofr[i].enable)
+			{
+				uint8_t curTofcAddr = 0x29;
+				i2cRead(I2C_DEVICE, tofr[i].device.i2cAddr, AIP01_REG_I2C_SLAVE_DEVICE_ADDRESS, 1, &curTofcAddr);
+				cliPrintf(" | ReadAddr = %d\r\n", curTofcAddr);
+			}
+			else
+			{
+				cliPrintf("\r\n");
+			}
+		}
+	}
+	else
+	{
+		//int len = strlen(cmdline);
+		int reg = atoi(cmdline);
+		if (reg == 0)
+		{
+			uint8_t curTofcAddr = 0x01;
+			i2cRead(I2C_DEVICE, AIP01_DEVICE_DEAFULT_ADDR, AIP01_REG_I2C_SLAVE_DEVICE_ADDRESS, 1, &curTofcAddr);
+			cliPrintf(" | ReadAddr = %d\r\n", curTofcAddr);
+		}
+		else
+		{
+			uint8_t regData = 0;
+			i2cRead(I2C_DEVICE, TOFR_DEVICE_START_ADDR, reg, 1, &regData);
+			cliPrintf("read reg:%d = %d\r\n", reg, regData);
+		}
+	}
+	cliPrompt();
+}
+static void cliSetRangefinderData(char *cmdline) //#20160822 phis
+{
+	if (isEmpty(cmdline)) {
+		cliPrintf("input: Addr , reg and value\r\n");
+	}
+	else
+	{
+		//int len = strlen(cmdline);
+		char *ptr = cmdline;
+
+		uint8_t addr = atoi(cmdline);
+
+		ptr = strchr(ptr, ' ');
+		ptr++;
+		uint8_t reg = atoi(cmdline);
+
+		ptr = strchr(ptr, ' ');
+		ptr++;
+		uint8_t regValue = atoi(ptr);
+
+		//reg 138 = set AIP01_REG_I2C_SLAVE_DEVICE_ADDRESS
+		bool setSucc = i2cWrite(I2C_DEVICE, addr, reg, regValue);
+		cliPrintf("set %s ( reg:%d = %d )\r\n", setSucc == true ? "true" : "false", reg, regValue);
+	}
+	cliPrompt();
+}
+
+
+static void aip01_print(int in_addr)
+{
+	i2cWrite(I2C_DEVICE, in_addr, AIP01_REG_SYSRANGE_START, AIP01_REG_SYSRANGE_MODE_START_STOP);
+
+	//ranging
+	uint8_t AIP01_REG_buf[12];
+	for (int i = 0; i < 12; i++)
+		AIP01_REG_buf[i] = 0;
+
+	int readSucc = i2cRead(I2C_DEVICE, in_addr, AIP01_REG_RESULT_RANGE_STATUS, 12, AIP01_REG_buf);
+
+
+	cliPrintf("debug: Addr=%d, readSucc=%d, buf[0~11]=\r\n", in_addr,readSucc);
+	for (int i = 0; i < 12; i++)
+		cliPrintf("%d\t", AIP01_REG_buf[i]);
+	cliPrint("\r\n");
+	for (int i = 0; i < 12; i++)
+		cliPrintf("%X\t", AIP01_REG_buf[i]);
+	cliPrint("\r\n");
+
+	uint16_t dist = makeuint16(AIP01_REG_buf[11], AIP01_REG_buf[10]);
+	//uint8_t DeviceRangeStatusInternal = ((buf[0] & 0x78) >> 3);
+
+
+	// AIP01 API start--------------------------------
+	uint8_t DeviceRangeStatus;
+	uint16_t AmbientRate;
+	uint32_t SignalRate;
+	uint16_t EffectiveSpadRtnCount;
+	uint8_t localBuffer[12];
+
+	for (int i = 0; i < 12; i++)
+		localBuffer[i] = AIP01_REG_buf[i];
+
+	SignalRate = (uint32_t)makeuint16(localBuffer[7], localBuffer[6]);
+	AmbientRate = makeuint16(localBuffer[9], localBuffer[8]);
+	EffectiveSpadRtnCount = makeuint16(localBuffer[3], localBuffer[2]);
+	DeviceRangeStatus = localBuffer[0];
+
+	// AIP01 API end--------------------------------
+	uint8_t deviceStatusConvert = ((DeviceRangeStatus & 0x78) >> 3);
+	cliPrintf("[  0]DeviceRangeStatus = %d ([%d]%s)\r\n", DeviceRangeStatus, deviceStatusConvert, AIP01_DeviceErrorString[deviceStatusConvert]);
+
+	// effectively a measure of the ambien t light
+	cliPrintf("[3,2]EffectiveSpadRtnCount = %d\r\n", EffectiveSpadRtnCount);
+	cliPrintf("[7,6]SignalRate = %d\r\n", SignalRate);
+	cliPrintf("[9,8]AmbientRate = %d\r\n", AmbientRate);
+	cliPrintf("[B,A]distance: %dmm\r\n", dist);
+}
+static void cliPrintRange(char *cmdline) //#20160822 phis
+{
+	//int len = 0;
+	//len = strlen(cmdline);
+	UNUSED(cmdline);
+
+
+	if (isEmpty(cmdline)) {
+		aip01_print(AIP01_DEVICE_DEAFULT_ADDR);
+	}
+	else
+	{
+		//int len = strlen(cmdline);
+		int tofcIndex = atoi(cmdline);
+		if (tofcIndex < TOFR_DEVICE_COUNT)
+		{
+			if (tofr[tofcIndex].enable)
+			{
+				aip01_print(tofr[tofcIndex].device.i2cAddr);
+				cliPrintf("ValidRange Dalta Time: %dms\r\n", tofr[tofcIndex].lastValidRangeTime - millis());
+			}
+			else
+			{
+				cliPrintf("tofcIndex=%d enable=False\r\n", tofcIndex);
+			}
+		}
+		else
+		{
+			cliPrintf("tofcIndex=%d , TOFC_DEVICE_COUNT=%d\r\n", tofcIndex, TOFR_DEVICE_COUNT);
+			aip01_print(tofcIndex);
+		}
+	}
+
+}
+
+//----------------------------------------------------------------------------------------------
+
+
 typedef struct {
     const char *name;
 #ifndef SKIP_CLI_COMMAND_HELP
@@ -3617,6 +3837,13 @@ const clicmd_t cmdTable[] = {
     CLI_COMMAND_DEF("tasks", "show task stats", NULL, cliTasks),
 #endif
     CLI_COMMAND_DEF("version", "show version", NULL, cliVersion),
+
+	//#20160822 Phisten add debug laser -----------------------------------------------------------
+	CLI_COMMAND_DEF("pRng", "Print Laser Rangefinder data", NULL, cliPrintRange),
+	CLI_COMMAND_DEF("iRng", "Init Laser Rangefinder", NULL, cliInitRangefinder),
+	CLI_COMMAND_DEF("gRng", "Get Laser Rangefinder reg value", NULL, cliGetRangefinderData),
+	CLI_COMMAND_DEF("sRng", "Set Laser Rangefinder reg value", NULL, cliSetRangefinderData),
+	// --------------------------------------------------------------------------------------------
 };
 
 static void cliHelp(char *cmdline)

@@ -557,6 +557,7 @@ COMMON_SRC = \
             sensors/diagnostics.c \
             sensors/gyro.c \
             sensors/initialisation.c \
+			xf/sensors/tofr.c \
             $(CMSIS_SRC) \
             $(DEVICE_STDPERIPH_SRC)
 
@@ -575,6 +576,7 @@ HIGHEND_SRC = \
             drivers/display_ug2864hsweg01.c \
             drivers/sonar_hcsr04.c \
             drivers/sonar_srf10.c \
+		    xf/drivers/tofr_aip01.c \
             io/dashboard.c \
             io/displayport_max7456.c \
             io/displayport_msp.c \
@@ -595,6 +597,7 @@ HIGHEND_SRC = \
             sensors/barometer.c \
             sensors/pitotmeter.c \
             sensors/rangefinder.c \
+		    xf/sensors/tofr.c \
             telemetry/crsf.c \
             telemetry/frsky.c \
             telemetry/hott.c \

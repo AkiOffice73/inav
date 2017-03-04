@@ -19,6 +19,8 @@
 #include <stdlib.h>
 #include <stdint.h>
 
+#include "build/debug.h"
+
 #include "platform.h"
 
 #include "cms/cms.h"
@@ -27,11 +29,14 @@
 #include "common/color.h"
 #include "common/utils.h"
 
+#include "drivers/gpio.h"
+#include "drivers/system.h"
 #include "drivers/accgyro.h"
 #include "drivers/compass.h"
 #include "drivers/sensor.h"
 #include "drivers/serial.h"
 #include "drivers/stack_check.h"
+#include "xf/drivers/tofr_aip01.h"
 
 #include "fc/cli.h"
 #include "fc/config.h"
@@ -67,6 +72,7 @@
 #include "sensors/gyro.h"
 #include "sensors/pitotmeter.h"
 #include "sensors/rangefinder.h"
+#include "xf/sensors/tofr.h"
 
 #include "telemetry/telemetry.h"
 
@@ -185,10 +191,9 @@ void taskUpdateSonar(timeUs_t currentTimeUs)
 void taskUpdateTofr(timeUs_t currentTimeUs)
 {
 	UNUSED(currentTimeUs);
-
-	//if (sensors(SENSOR_TOFR)) {
+	if (sensors(SENSOR_TOFR)) {
 		tofrUpdate();
-	//}
+	}
 }
 #endif
 
@@ -304,7 +309,10 @@ void fcTasksInit(void)
     setTaskEnabled(TASK_PITOT, sensors(SENSOR_PITOT));
 #endif
 #ifdef SONAR
-    setTaskEnabled(TASK_SONAR, sensors(SENSOR_SONAR));
+	setTaskEnabled(TASK_SONAR, sensors(SENSOR_SONAR));
+#endif
+#ifdef TOFR
+	setTaskEnabled(TASK_TOFR, sensors(SENSOR_TOFR));
 #endif
 #ifdef USE_DASHBOARD
     setTaskEnabled(TASK_DASHBOARD, feature(FEATURE_DASHBOARD));
