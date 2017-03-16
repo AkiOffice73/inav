@@ -66,21 +66,34 @@
 
 #define GPS_NMEA_CONFIG_DELAY   (300)
 
-
 static const char * mtkInit_BaudData[GPS_BAUDRATE_COUNT] = {
 	"$PMTK251,115200*1F\r\n",     // GPS_BAUDRATE_115200
 	"$PMTK251,57600*2C\r\n",      // GPS_BAUDRATE_57600
 	"$PMTK251,38400*27\r\n",      // GPS_BAUDRATE_38400
 	"$PMTK251,19200*22\r\n",      // GPS_BAUDRATE_19200
-	"$PMTK251,9600*17\r\n"        // GPS_BAUDRATE_9600
+	"$PMTK251,9600*17\r\n",       // GPS_BAUDRATE_9600
 	"$PMTK251,4800*14\r\n"        // GPS_BAUDRATE_4800 
 };
 static const uint8_t mtkInit_REPORTRATE_5Hz[]	= "$PMTK220,200*2C\r\n";
-static const uint8_t mtkInit_REPORTRATE_10Hz[] = "$PMTK220,100*2F\r\n";
-static const char * mtkInitStr_REPORTRATE_10Hz = "$PMTK220,100*2F\r\n";
+static const char * mtkInitStr_REPORTRATE_5Hz = "$PMTK220,200*2C\r\n";
 static const uint8_t mtkInit_UPDATERATE_5Hz[]	= "$PMTK300,200,0,0,0,0*2F\r\n";
-static const uint8_t mtkInit_UPDATERATE_10Hz[]	= "$PMTK300,100,0,0,0,0*2C\r\n";
-static const char * mtkInitStr_UPDATERATE_10Hz = "$PMTK300,100,0,0,0,0*2C\r\n";
+static const char * mtkInitStr_UPDATERATE_5Hz = "$PMTK300,200,0,0,0,0*2F\r\n";
+
+
+static const char * srfInit_BaudData[GPS_BAUDRATE_COUNT] = {
+	"$PSRF100,0,115200,8,1,0*04\r\n",	// GPS_BAUDRATE_115200
+	"$PSRF100,0,57600,8,1,0*37\r\n",	// GPS_BAUDRATE_57600
+	"$PSRF100,0,38400,8,1,0*3C\r\n",	// GPS_BAUDRATE_38400
+	"$PSRF100,0,19200,8,1,0*39\r\n",	// GPS_BAUDRATE_19200
+	"$PSRF100,0,9600,8,1,0*0C\r\n",		// GPS_BAUDRATE_9600
+	"$PSRF100,0,4800,8,1,0*0F\r\n"		// GPS_BAUDRATE_4800 
+};
+static const uint8_t srfInit_REPORTRATE_5Hz[] = "$PMTK220,200*2C\r\n";
+static const char * srfInitStr_REPORTRATE_5Hz = "$PMTK220,200*2C\r\n";
+static const uint8_t srfInit_UPDATERATE_5Hz[] = "$PSRF103,00,01,00,01*25\r\n";
+static const char * srfInitStr_UPDATERATE_5Hz = "$PSRF103,00,01,00,01*25\r\n";
+
+
 
 //{
 //	0xB5, 0x62, 0x06, 0x08, 0x06, 0x00, 0x64, 0x00, 0x01, 0x00, 0x01, 0x00, 0x7A, 0x12, // set rate to 10Hz (measurement period: 100ms, navigation rate: 1 cycle)
@@ -290,28 +303,49 @@ static bool gpsConfigure(void)
 	}
 	switch (gpsState.autoConfigStep) {
 	case 0: // REPORTRATE change
-		nmeaTransmitAutoConfigCommands(mtkInit_REPORTRATE_10Hz, sizeof(mtkInit_REPORTRATE_10Hz));
+		nmeaTransmitAutoConfigCommands(mtkInit_REPORTRATE_5Hz, sizeof(mtkInit_REPORTRATE_5Hz));
 		break;
 	case 1: // REPORTRATE check
 		//TODO check report rate has been change
 		if (isSerialTransmitBufferEmpty(gpsState.gpsPort)) {
 			// Cycle through all possible bauds and send init string
-			serialPrint(gpsState.gpsPort, mtkInitStr_REPORTRATE_10Hz);
+			serialPrint(gpsState.gpsPort, mtkInitStr_REPORTRATE_5Hz);
 			gpsState.autoConfigStep++;
 			gpsSetState(GPS_CONFIGURE);   // switch to the same state to reset state transition time
 		}
 		break;
 	case 2: // UPDATERATE change
-		nmeaTransmitAutoConfigCommands(mtkInit_UPDATERATE_10Hz, sizeof(mtkInit_UPDATERATE_10Hz));
+		nmeaTransmitAutoConfigCommands(mtkInit_UPDATERATE_5Hz, sizeof(mtkInit_UPDATERATE_5Hz));
 		break;
 	case 3: // UPDATERATE check
 		//TODO check update rate has been change
 		if (isSerialTransmitBufferEmpty(gpsState.gpsPort)) {
 			// Cycle through all possible bauds and send init string
-			serialPrint(gpsState.gpsPort, mtkInitStr_UPDATERATE_10Hz);
+			serialPrint(gpsState.gpsPort, mtkInitStr_UPDATERATE_5Hz);
 			gpsState.autoConfigStep++;
 			gpsSetState(GPS_CONFIGURE);   // switch to the same state to reset state transition time
 		}
+		break;
+	default:
+		// gps should be initialised, try receiving
+		gpsSetState(GPS_RECEIVING_DATA);
+		break;
+	}
+	return false;
+
+}
+static bool gpsConfigure_PSRF(void)
+{
+	if ((millis() - gpsState.lastStateSwitchMs) < GPS_NMEA_CONFIG_DELAY)
+	{
+		return false;
+	}
+	switch (gpsState.autoConfigStep) {
+	case 0: // REPORTRATE change
+		nmeaTransmitAutoConfigCommands(srfInit_REPORTRATE_5Hz, sizeof(srfInit_REPORTRATE_5Hz));
+		break;
+	case 1: // UPDATERATE change
+		nmeaTransmitAutoConfigCommands(srfInit_UPDATERATE_5Hz, sizeof(srfInit_UPDATERATE_5Hz));
 		break;
 	default:
 		// gps should be initialised, try receiving
@@ -354,8 +388,14 @@ static bool gpsChangeBaud(void)
 		// Do the switch only if TX buffer is empty - make sure all init string was sent at the same baud
 		if ((millis() - gpsState.lastStateSwitchMs) >= GPS_BAUD_CHANGE_DELAY && isSerialTransmitBufferEmpty(gpsState.gpsPort)) {
 			// Cycle through all possible bauds and send init string
-			serialSetBaudRate(gpsState.gpsPort, baudRates[gpsToSerialBaudRate[gpsState.autoBaudrateIndex]]);
-			serialPrint(gpsState.gpsPort, mtkInit_BaudData[gpsState.baudrateIndex]);
+			if (gpsState.gpsConfig->provider == GPS_NMEA_PSRF)
+			{
+				serialPrint(gpsState.gpsPort, srfInit_BaudData[gpsState.baudrateIndex]);
+			}
+			else //if (gpsState.gpsConfig->provider == GPS_NMEA)
+			{
+				serialPrint(gpsState.gpsPort, mtkInit_BaudData[gpsState.baudrateIndex]);
+			}
 
 			gpsState.autoBaudrateIndex++;
 			gpsSetState(GPS_CHANGE_BAUD);   // switch to the same state to reset state transition time
@@ -397,7 +437,14 @@ bool gpsHandleNMEA(void)
 			return false;
 		}
 		else {
-			return gpsConfigure();
+			if (gpsState.gpsConfig->provider == GPS_NMEA_PSRF)
+			{
+				return gpsConfigure_PSRF();
+			}
+			else //if (gpsState.gpsConfig->provider == GPS_NMEA)
+			{
+				return gpsConfigure();
+			}
 		}
 
     case GPS_RECEIVING_DATA:

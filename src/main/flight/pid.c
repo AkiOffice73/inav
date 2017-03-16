@@ -50,6 +50,7 @@
 #include "sensors/gyro.h"
 #include "sensors/acceleration.h"
 #include "sensors/compass.h"
+#include "xf/sensors/tofr.h"
 
 
 typedef struct {
@@ -407,10 +408,19 @@ static float calcHorizonRateMagnitude(void)
 static void pidLevel(pidState_t *pidState, flight_dynamics_index_t axis, float horizonRateMagnitude)
 {
     // This is ROLL/PITCH, run ANGLE/HORIZON controllers
-    const float angleTarget = pidRcCommandToAngle(rcCommand[axis], pidProfile()->max_angle_inclination[axis]);
+    float angleTarget = pidRcCommandToAngle(rcCommand[axis], pidProfile()->max_angle_inclination[axis]);
+
+#ifdef TOFR	
+	if (FLIGHT_MODE(ANGLE_MODE) && tofr_debug_avoidanceMode) { // && FLIGHT_MODE(AVOIDANCE_MODE)) {
+		angleTarget += (float)TOFR_angle[axis];
+	}
+#endif
+	debug[axis] = angleTarget;
+
     const float angleError = angleTarget - attitude.raw[axis];
 
     float angleRateTarget = constrainf(angleError * (pidBank()->pid[PID_LEVEL].P / FP_PID_LEVEL_P_MULTIPLIER), -currentControlRateProfile->rates[axis] * 10.0f, currentControlRateProfile->rates[axis] * 10.0f);
+
 
     // Apply simple LPF to angleRateTarget to make response less jerky
     // Ideas behind this:

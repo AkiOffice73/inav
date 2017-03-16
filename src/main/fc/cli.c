@@ -1732,9 +1732,9 @@ static void cliSerial(char *cmdline)
                 portConfig.msp_baudrateIndex = baudRateIndex;
                 break;
             case 1:
-                if (baudRateIndex < BAUD_9600 || baudRateIndex > BAUD_115200) {
-                    continue;
-                }
+                //if (baudRateIndex < BAUD_9600 || baudRateIndex > BAUD_115200) {
+                //    continue;
+                //}
                 portConfig.gps_baudrateIndex = baudRateIndex;
                 break;
             case 2:
@@ -3508,11 +3508,24 @@ static void cliDiff(char *cmdline)
 }
 
 //-----------------------------------------------------------------------------
-uint8_t AIP01_Addr = 0x30;
-uint8_t AIP01_REG_SLAVE_DEVICE_ADDRESS = 0x8a;
+static void cliTofrXshutEnable(char *cmdline)
+{
+	//gpio_config_t gpioCfg;
+	//gpioCfg.mode = 0x01; //GPIO_Mode_OUT /*!< GPIO Output Mode */;
+	//gpioCfg.pin = tofXsdnGpio[i];
+	//gpioCfg.speed = 1;
+
+
+	//delay(10);
+	//digitalLo(gpioType, xsdnPin);
+	//delay(10);
+	//digitalHi(gpioType, xsdnPin);
+	//delay(10);
+}
 
 uint8_t AIP01_ReadByte(uint8_t reg)
 {
+	uint8_t AIP01_Addr = 0x30;
 	uint8_t in_addr = AIP01_Addr;
 	uint8_t buf[1];
 	buf[0] = 0;
@@ -3521,6 +3534,7 @@ uint8_t AIP01_ReadByte(uint8_t reg)
 }
 uint8_t AIP01_GetDeviceAddr()
 {
+	uint8_t AIP01_REG_SLAVE_DEVICE_ADDRESS = 0x8a;
 	return AIP01_ReadByte(AIP01_REG_SLAVE_DEVICE_ADDRESS);
 }
 
@@ -3843,6 +3857,7 @@ const clicmd_t cmdTable[] = {
 	CLI_COMMAND_DEF("iRng", "Init Laser Rangefinder", NULL, cliInitRangefinder),
 	CLI_COMMAND_DEF("gRng", "Get Laser Rangefinder reg value", NULL, cliGetRangefinderData),
 	CLI_COMMAND_DEF("sRng", "Set Laser Rangefinder reg value", NULL, cliSetRangefinderData),
+	CLI_COMMAND_DEF("xshut", "enable tofr", NULL, cliTofrXshutEnable),
 	// --------------------------------------------------------------------------------------------
 };
 

@@ -44,6 +44,8 @@
 #include "sensors/pitotmeter.h"
 #include "sensors/gyro.h"
 #include "sensors/battery.h"
+#include "xf/sensors/tofr.h"
+
 
 #include "fc/cli.h"
 #include "fc/config.h"
@@ -456,7 +458,15 @@ void processRx(timeUs_t currentTimeUs)
         }
         if (IS_RC_MODE_ACTIVE(BOXHEADADJ)) {
             headFreeModeHold = DECIDEGREES_TO_DEGREES(attitude.values.yaw); // acquire new heading
-        }
+
+			//TODO #20160901%phis105 暫時用重設無頭模式航向的功能來開關避障(rcModeIsActive(BOXHEADADJ) = avoidance Enable)
+			updateAvoidanceModeState(true);
+		}
+		else
+		{
+			//TODO #20160901%phis105 暫時用重設無頭模式航向的功能來開關避障(rcModeIsActive(BOXHEADADJ) = avoidance Enable)
+			updateAvoidanceModeState(false);
+		}
     }
 #endif
 
@@ -627,6 +637,15 @@ void taskMainPidLoop(timeUs_t currentTimeUs)
 #if defined(NAV)
     updatePositionEstimator();
     applyWaypointNavigationAndAltitudeHold();
+#endif
+
+#ifdef TOFR
+	if (sensors(SENSOR_TOFR)) {
+		//TODO #20160831%phis104 新增AVOIDANCE_MODE在configurator
+		if ((FLIGHT_MODE(HORIZON_MODE) || FLIGHT_MODE(ANGLE_MODE)) && tofr_debug_avoidanceMode) {// && FLIGHT_MODE(AVOIDANCE_MODE)) {
+			updateTofrStateForAvoidanceMode();
+		}
+	}
 #endif
 
     // If we're armed, at minimum throttle, and we do arming via the
