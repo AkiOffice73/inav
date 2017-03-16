@@ -90,8 +90,8 @@ static const char * srfInit_BaudData[GPS_BAUDRATE_COUNT] = {
 };
 static const uint8_t srfInit_REPORTRATE_5Hz[] = "$PMTK220,200*2C\r\n";
 static const char * srfInitStr_REPORTRATE_5Hz = "$PMTK220,200*2C\r\n";
-static const uint8_t srfInit_UPDATERATE_5Hz[] = "$PSRF103,00,01,00,01*25\r\n";
-static const char * srfInitStr_UPDATERATE_5Hz = "$PSRF103,00,01,00,01*25\r\n";
+static const uint8_t srfInit_UPDATERATE_5Hz[] = "$PSRF103,00,6,00,0*23\r\n";
+static const char * srfInitStr_UPDATERATE_5Hz = "$PSRF103,00,6,00,0*23\r\n";
 
 
 
