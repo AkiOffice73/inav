@@ -81,12 +81,12 @@ static const char * mtkInitStr_UPDATERATE_5Hz = "$PMTK300,200,0,0,0,0*2F\r\n";
 
 
 static const char * srfInit_BaudData[GPS_BAUDRATE_COUNT] = {
-	"$PSRF100,0,115200,8,1,0*04\r\n",	// GPS_BAUDRATE_115200
-	"$PSRF100,0,57600,8,1,0*37\r\n",	// GPS_BAUDRATE_57600
-	"$PSRF100,0,38400,8,1,0*3C\r\n",	// GPS_BAUDRATE_38400
-	"$PSRF100,0,19200,8,1,0*39\r\n",	// GPS_BAUDRATE_19200
-	"$PSRF100,0,9600,8,1,0*0C\r\n",		// GPS_BAUDRATE_9600
-	"$PSRF100,0,4800,8,1,0*0F\r\n"		// GPS_BAUDRATE_4800 
+	"$PSRF100,1,115200,8,1,0*05\r\n",	// GPS_BAUDRATE_115200
+	"$PSRF100,1,57600,8,1,0*36\r\n",	// GPS_BAUDRATE_57600
+	"$PSRF100,1,38400,8,1,0*3D\r\n",	// GPS_BAUDRATE_38400
+	"$PSRF100,1,19200,8,1,0*38\r\n",	// GPS_BAUDRATE_19200
+	"$PSRF100,1,9600,8,1,0*0D\r\n",		// GPS_BAUDRATE_9600
+	"$PSRF100,1,4800,8,1,0*0E\r\n"		// GPS_BAUDRATE_4800 
 };
 static const uint8_t srfInit_REPORTRATE_5Hz[] = "$PMTK220,200*2C\r\n";
 static const char * srfInitStr_REPORTRATE_5Hz = "$PMTK220,200*2C\r\n";
@@ -341,10 +341,13 @@ static bool gpsConfigure_PSRF(void)
 		return false;
 	}
 	switch (gpsState.autoConfigStep) {
-	case 0: // REPORTRATE change
-		nmeaTransmitAutoConfigCommands(srfInit_REPORTRATE_5Hz, sizeof(srfInit_REPORTRATE_5Hz));
-		break;
-	case 1: // UPDATERATE change
+	case 0: 
+	//TODO report rate
+	//	//REPORTRATE change
+	//	nmeaTransmitAutoConfigCommands(srfInit_REPORTRATE_5Hz, sizeof(srfInit_REPORTRATE_5Hz));
+	//	break;
+	//case 1: 
+		// UPDATERATE change
 		nmeaTransmitAutoConfigCommands(srfInit_UPDATERATE_5Hz, sizeof(srfInit_UPDATERATE_5Hz));
 		break;
 	default:
@@ -388,6 +391,7 @@ static bool gpsChangeBaud(void)
 		// Do the switch only if TX buffer is empty - make sure all init string was sent at the same baud
 		if ((millis() - gpsState.lastStateSwitchMs) >= GPS_BAUD_CHANGE_DELAY && isSerialTransmitBufferEmpty(gpsState.gpsPort)) {
 			// Cycle through all possible bauds and send init string
+			serialSetBaudRate(gpsState.gpsPort, baudRates[gpsToSerialBaudRate[gpsState.autoBaudrateIndex]]);
 			if (gpsState.gpsConfig->provider == GPS_NMEA_PSRF)
 			{
 				serialPrint(gpsState.gpsPort, srfInit_BaudData[gpsState.baudrateIndex]);
@@ -396,6 +400,7 @@ static bool gpsChangeBaud(void)
 			{
 				serialPrint(gpsState.gpsPort, mtkInit_BaudData[gpsState.baudrateIndex]);
 			}
+			debug[1] = gpsState.baudrateIndex;
 
 			gpsState.autoBaudrateIndex++;
 			gpsSetState(GPS_CHANGE_BAUD);   // switch to the same state to reset state transition time
