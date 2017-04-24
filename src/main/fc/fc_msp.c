@@ -140,6 +140,10 @@ static const box_t boxes[CHECKBOX_ITEM_COUNT + 1] = {
     { BOXTURNASSIST, "TURN ASSIST;", 35 },
     { BOXNAVLAUNCH, "NAV LAUNCH;", 36 },
     { BOXAUTOTRIM, "SERVO AUTOTRIM;", 37 },
+
+
+	{ BOXAVOIDANCE, "AVOIDANCE;", 38 },
+	{ BOXMCLAUNCH, "MC LAUNCH;", 39 },
     { CHECKBOX_ITEM_COUNT, NULL, 0xFF }
 };
 
@@ -325,7 +329,7 @@ static void initActiveBoxIds(void)
     }
 #endif
 
-    activeBoxIds[activeBoxIdCount++] = BOXFAILSAFE;
+	activeBoxIds[activeBoxIdCount++] = BOXFAILSAFE;
 }
 
 #define IS_ENABLED(mask) (mask == 0 ? 0 : 1)

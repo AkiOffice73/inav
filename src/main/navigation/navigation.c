@@ -749,6 +749,12 @@ static navigationFSMEvent_t navOnEnteringState_NAV_STATE_IDLE(navigationFSMState
     return NAV_FSM_EVENT_NONE;
 }
 
+/* Tsst Set DesiredPosZ  */
+void offsetDesiredAltitude(float posOffsetZ)
+{
+	posControl.desiredState.pos.V.Z = posControl.desiredState.pos.V.Z + posOffsetZ;
+}
+
 static navigationFSMEvent_t navOnEnteringState_NAV_STATE_ALTHOLD_INITIALIZE(navigationFSMState_t previousState)
 {
     const navigationFSMStateFlags_t prevFlags = navGetStateFlags(previousState);

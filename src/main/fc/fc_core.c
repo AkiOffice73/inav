@@ -461,14 +461,35 @@ void processRx(timeUs_t currentTimeUs)
 
 			//TODO #20160901%phis105 暫時用重設無頭模式航向的功能來開關避障(rcModeIsActive(BOXHEADADJ) = avoidance Enable)
 			updateAvoidanceModeState(true);
-		}
-		else
-		{
+			ENABLE_FLIGHT_MODE(AVOIDANCE_MODE);
+		} else {
 			//TODO #20160901%phis105 暫時用重設無頭模式航向的功能來開關避障(rcModeIsActive(BOXHEADADJ) = avoidance Enable)
 			updateAvoidanceModeState(false);
+			ENABLE_FLIGHT_MODE(AVOIDANCE_MODE);
 		}
     }
 #endif
+
+	//TODO: mclaunch Mode 
+	// used arm kill switch and althold mode
+	if (IS_RC_MODE_ACTIVE(BOXMCLAUNCH) && IS_RC_MODE_ACTIVE(BOXARM) && IS_RC_MODE_ACTIVE(BOXNAVALTHOLD))
+	{
+		//TODO: mid throttle check
+		//int16_t altHoldThrottleRCZero = rcLookupThrottleMid();
+		//const int16_t rcThrottleAdjustment = applyDeadband(rcCommand[THROTTLE] - altHoldThrottleRCZero, rcControlsConfig()->alt_hold_deadband);
+		if (throttleStatus == THROTTLE_HIGH)
+		{
+			if (!FLIGHT_MODE(MC_LAUNCH_MODE) && !ARMING_FLAG(ARMED))
+			{
+				//TODO: set target alt or set nav Z point
+				offsetDesiredAltitude(150.0f);
+				mwArm();
+				ENABLE_FLIGHT_MODE(MC_LAUNCH_MODE);
+			}
+		}
+	} else {
+		DISABLE_FLIGHT_MODE(MC_LAUNCH_MODE);
+	}
 
     // Navigation may override PASSTHRU_MODE
     if (IS_RC_MODE_ACTIVE(BOXPASSTHRU) && !naivationRequiresAngleMode()) {

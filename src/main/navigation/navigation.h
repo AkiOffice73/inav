@@ -270,6 +270,9 @@ void resetWaypointList(void);
 bool loadNonVolatileWaypointList(void);
 bool saveNonVolatileWaypointList(void);
 
+/*Debug Direct DesirePos Control*/
+void offsetDesiredAltitude(float posOffsetZ);
+
 /* Geodetic functions */
 typedef enum {
     GEO_ALT_ABSOLUTE,
