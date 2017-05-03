@@ -106,6 +106,12 @@ static uint32_t disarmAt;     // Time of automatic disarm when "Don't spin the m
 
 static bool isRXDataNew;
 
+uint64_t mcAutoLaunchTimeMicros = 3 * 1000000; // 3s
+uint64_t mcAutoLaunchStartTimeMicros = 0;
+float mcAutoLaunchAltitude = 150.0f; //cm
+float mcAutoLaunchGroundAltitude = 0;
+
+
 bool isCalibrating(void)
 {
 #ifdef BARO
@@ -475,17 +481,46 @@ void processRx(timeUs_t currentTimeUs)
 	if (IS_RC_MODE_ACTIVE(BOXMCLAUNCH) && IS_RC_MODE_ACTIVE(BOXARM) && IS_RC_MODE_ACTIVE(BOXNAVALTHOLD))
 	{
 		//TODO: mid throttle check
-		//int16_t altHoldThrottleRCZero = rcLookupThrottleMid();
-		//const int16_t rcThrottleAdjustment = applyDeadband(rcCommand[THROTTLE] - altHoldThrottleRCZero, rcControlsConfig()->alt_hold_deadband);
-		if (throttleStatus == THROTTLE_HIGH)
+		int16_t altHoldThrottleRCZero = rcLookupThrottleMid();
+		const int16_t rcThrottleAdjustment = applyDeadband(rcCommand[THROTTLE] - altHoldThrottleRCZero, rcControlsConfig()->alt_hold_deadband);
+		if (rcThrottleAdjustment == 0)
 		{
+			//control launch z speed
+			if (FLIGHT_MODE(MC_LAUNCH_MODE) && ARMING_FLAG(ARMED))
+			{
+				//TODO: set target alt or set nav Z point
+				uint64_t launchProgressDelta = micros() - mcAutoLaunchStartTimeMicros;
+				float launchProgressRate = launchProgressDelta / mcAutoLaunchTimeMicros;
+				if (launchProgressRate > 0.0f && launchProgressRate <= 1.0f)
+				{
+					setDesiredAltitude(mcAutoLaunchGroundAltitude + mcAutoLaunchAltitude * launchProgressRate);
+				}
+				else if (launchProgressRate < 0.0f || launchProgressRate > 1.0f)
+				{
+					//TODO: stop launch control
+					
+					DISABLE_FLIGHT_MODE(MC_LAUNCH_MODE);
+				}
+			}
+
 			if (!FLIGHT_MODE(MC_LAUNCH_MODE) && !ARMING_FLAG(ARMED))
 			{
 				//TODO: set target alt or set nav Z point
-				offsetDesiredAltitude(150.0f);
+				//offsetDesiredAltitude(mcAutoLaunchAttitude);
+
+				mcAutoLaunchGroundAltitude = getActualAltitude();
+				mcAutoLaunchStartTimeMicros = micros();
+
+				//TODO: control THROTTLE for Arm
+				//rcCommand[THROTTLE] = 0;
 				mwArm();
+
 				ENABLE_FLIGHT_MODE(MC_LAUNCH_MODE);
 			}
+		}
+		else
+		{
+			DISABLE_FLIGHT_MODE(MC_LAUNCH_MODE);
 		}
 	} else {
 		DISABLE_FLIGHT_MODE(MC_LAUNCH_MODE);

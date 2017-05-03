@@ -272,6 +272,9 @@ bool saveNonVolatileWaypointList(void);
 
 /*Debug Direct DesirePos Control*/
 void offsetDesiredAltitude(float posOffsetZ);
+void setDesiredAltitude(float posOffsetZ);
+float getActualAltitude();
+
 
 /* Geodetic functions */
 typedef enum {
