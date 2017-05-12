@@ -109,6 +109,7 @@ static bool isRXDataNew;
 uint64_t mcAutoLaunchTimeMicros = 3 * 1000000; // 3s
 uint64_t mcAutoLaunchStartTimeMicros = 0; //us
 uint64_t mcAutoLaunchStartDelayTimeMicros = 1 * 1000000; //1s
+float mcAutoLaunchAltitude = 130.0f; //cm
 float mcAutoLaunchGroundAltitude = 0;
 bool mcAutoLaunchPhase = false;
 
