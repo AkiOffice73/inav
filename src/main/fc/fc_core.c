@@ -107,9 +107,10 @@ static uint32_t disarmAt;     // Time of automatic disarm when "Don't spin the m
 static bool isRXDataNew;
 
 uint64_t mcAutoLaunchTimeMicros = 3 * 1000000; // 3s
-uint64_t mcAutoLaunchStartTimeMicros = 0;
-float mcAutoLaunchAltitude = 150.0f; //cm
+uint64_t mcAutoLaunchStartTimeMicros = 0; //us
+uint64_t mcAutoLaunchStartDelayTimeMicros = 1 * 1000000; //1s
 float mcAutoLaunchGroundAltitude = 0;
+bool mcAutoLaunchPhase = false;
 
 
 bool isCalibrating(void)
@@ -471,7 +472,7 @@ void processRx(timeUs_t currentTimeUs)
 		} else {
 			//TODO #20160901%phis105 暫時用重設無頭模式航向的功能來開關避障(rcModeIsActive(BOXHEADADJ) = avoidance Enable)
 			updateAvoidanceModeState(false);
-			ENABLE_FLIGHT_MODE(AVOIDANCE_MODE);
+			DISABLE_FLIGHT_MODE(AVOIDANCE_MODE);
 		}
     }
 #endif
@@ -481,50 +482,60 @@ void processRx(timeUs_t currentTimeUs)
 	if (IS_RC_MODE_ACTIVE(BOXMCLAUNCH) && IS_RC_MODE_ACTIVE(BOXARM) && IS_RC_MODE_ACTIVE(BOXNAVALTHOLD))
 	{
 		//TODO: mid throttle check
-		int16_t altHoldThrottleRCZero = rcLookupThrottleMid();
-		const int16_t rcThrottleAdjustment = applyDeadband(rcCommand[THROTTLE] - altHoldThrottleRCZero, rcControlsConfig()->alt_hold_deadband);
+		int16_t curAltHoldMid = rcLookupThrottleMid();
+		const int16_t rcThrottleAdjustment = applyDeadband(rcCommand[THROTTLE] - curAltHoldMid, rcControlsConfig()->alt_hold_deadband);
 		if (rcThrottleAdjustment == 0)
 		{
-			//control launch z speed
-			if (FLIGHT_MODE(MC_LAUNCH_MODE) && ARMING_FLAG(ARMED))
+			if (mcAutoLaunchPhase == true)
 			{
-				//TODO: set target alt or set nav Z point
-				uint64_t launchProgressDelta = micros() - mcAutoLaunchStartTimeMicros;
-				float launchProgressRate = launchProgressDelta / mcAutoLaunchTimeMicros;
-				if (launchProgressRate > 0.0f && launchProgressRate <= 1.0f)
-				{
-					setDesiredAltitude(mcAutoLaunchGroundAltitude + mcAutoLaunchAltitude * launchProgressRate);
-				}
-				else if (launchProgressRate < 0.0f || launchProgressRate > 1.0f)
-				{
-					//TODO: stop launch control
-					
-					DISABLE_FLIGHT_MODE(MC_LAUNCH_MODE);
-				}
+				ENABLE_FLIGHT_MODE(MC_LAUNCH_MODE);
 			}
 
-			if (!FLIGHT_MODE(MC_LAUNCH_MODE) && !ARMING_FLAG(ARMED))
+			uint64_t launchStartDelta = micros() - mcAutoLaunchStartTimeMicros;
+			//control launch z speed
+			if (ARMING_FLAG(ARMED) && mcAutoLaunchPhase == true && launchStartDelta > mcAutoLaunchStartDelayTimeMicros)
+			{
+				float curActualAltitude = getActualAltitude();
+				//TODO: set THROTTLE for control Z speed
+				if (curActualAltitude - mcAutoLaunchGroundAltitude < mcAutoLaunchAltitude)
+				{
+					//rcData[THROTTLE] = rcData[THROTTLE] + 50 + 150;
+					rcCommand[THROTTLE] = rcCommand[THROTTLE] + 50 + 200;
+				}
+				else
+				{
+					//TODO: stop launch control
+					DISABLE_FLIGHT_MODE(MC_LAUNCH_MODE);
+					mcAutoLaunchPhase = false;
+				}
+
+			}
+
+			if (!ARMING_FLAG(ARMED) && mcAutoLaunchPhase == false)
 			{
 				//TODO: set target alt or set nav Z point
-				//offsetDesiredAltitude(mcAutoLaunchAttitude);
-
 				mcAutoLaunchGroundAltitude = getActualAltitude();
 				mcAutoLaunchStartTimeMicros = micros();
 
-				//TODO: control THROTTLE for Arm
-				//rcCommand[THROTTLE] = 0;
-				mwArm();
+				//TODO: control THROTTLE for Arm / init altholdMode
+				rcCommand[THROTTLE] = motorConfig()->minthrottle;
+				//rcData[THROTTLE] = rxConfig()->rx_min_usec;
 
+				mcAutoLaunchPhase = true;
 				ENABLE_FLIGHT_MODE(MC_LAUNCH_MODE);
+				mwArm();
 			}
 		}
 		else
 		{
 			DISABLE_FLIGHT_MODE(MC_LAUNCH_MODE);
+			mcAutoLaunchPhase = false;
 		}
 	} else {
 		DISABLE_FLIGHT_MODE(MC_LAUNCH_MODE);
+		mcAutoLaunchPhase = false;
 	}
+	debug[0] = rcCommand[THROTTLE];
 
     // Navigation may override PASSTHRU_MODE
     if (IS_RC_MODE_ACTIVE(BOXPASSTHRU) && !naivationRequiresAngleMode()) {

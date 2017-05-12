@@ -749,7 +749,7 @@ static navigationFSMEvent_t navOnEnteringState_NAV_STATE_IDLE(navigationFSMState
     return NAV_FSM_EVENT_NONE;
 }
 
-/* Tsst DesiredPosZ control for malaunch mode  */
+/* Tsst#Phis DesiredPosZ control for malaunch mode  */
 void offsetDesiredAltitude(float posOffsetZ)
 {
 	posControl.desiredState.pos.V.Z = posControl.desiredState.pos.V.Z + posOffsetZ;

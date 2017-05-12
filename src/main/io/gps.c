@@ -284,7 +284,7 @@ void gpsFinalizeChangeBaud(void)
         // Wait for GPS_INIT_DELAY before switching to required baud rate
         if ((millis() - gpsState.lastStateSwitchMs) >= GPS_BAUD_CHANGE_DELAY && isSerialTransmitBufferEmpty(gpsState.gpsPort)) {
             // Switch to required serial port baud
-			debug[0] = baudRates[gpsToSerialBaudRate[gpsState.baudrateIndex]] / 100;
+			//debug[0] = baudRates[gpsToSerialBaudRate[gpsState.baudrateIndex]] / 100;
             serialSetBaudRate(gpsState.gpsPort, baudRates[gpsToSerialBaudRate[gpsState.baudrateIndex]]);
             gpsState.lastMessageMs = millis();
             gpsSetState(GPS_CHECK_VERSION);

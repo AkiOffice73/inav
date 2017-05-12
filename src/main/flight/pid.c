@@ -415,7 +415,7 @@ static void pidLevel(pidState_t *pidState, flight_dynamics_index_t axis, float h
 		angleTarget += (float)TOFR_angle[axis];
 	}
 #endif
-	debug[axis] = angleTarget;
+	//debug[axis] = angleTarget;
 
     const float angleError = angleTarget - attitude.raw[axis];
 
