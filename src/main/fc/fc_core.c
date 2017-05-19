@@ -493,6 +493,7 @@ void processRx(timeUs_t currentTimeUs)
 			}
 
 			uint64_t launchStartDelta = micros() - mcAutoLaunchStartTimeMicros;
+			debug[1] = launchStartDelta / 1000;
 			//control launch z speed
 			if (ARMING_FLAG(ARMED) && mcAutoLaunchPhase == true && launchStartDelta > mcAutoLaunchStartDelayTimeMicros)
 			{
@@ -501,7 +502,7 @@ void processRx(timeUs_t currentTimeUs)
 				if (curActualAltitude - mcAutoLaunchGroundAltitude < mcAutoLaunchAltitude)
 				{
 					//rcData[THROTTLE] = rcData[THROTTLE] + 50 + 150;
-					rcCommand[THROTTLE] = rcCommand[THROTTLE] + 50 + 200;
+					rcCommand[THROTTLE] = curAltHoldMid + 50 + 200;
 				}
 				else
 				{
@@ -536,7 +537,7 @@ void processRx(timeUs_t currentTimeUs)
 		DISABLE_FLIGHT_MODE(MC_LAUNCH_MODE);
 		mcAutoLaunchPhase = false;
 	}
-	debug[0] = rcCommand[THROTTLE];
+	//debug[0] = rcCommand[THROTTLE];
 
     // Navigation may override PASSTHRU_MODE
     if (IS_RC_MODE_ACTIVE(BOXPASSTHRU) && !naivationRequiresAngleMode()) {
