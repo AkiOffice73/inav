@@ -523,6 +523,7 @@ COMMON_SRC = \
             flight/imu.c \
             flight/mixer.c \
             flight/pid.c \
+            flight/pid_autotune.c \
             flight/servos.c \
             io/beeper.c \
             io/pwmdriver_i2c.c \
@@ -601,6 +602,7 @@ HIGHEND_SRC = \
             telemetry/crsf.c \
             telemetry/frsky.c \
             telemetry/hott.c \
+	    telemetry/ibus_shared.c \
             telemetry/ibus.c \
             telemetry/ltm.c \
             telemetry/mavlink.c \
@@ -661,7 +663,7 @@ STM32F30x_COMMON_SRC = \
 STM32F4xx_COMMON_SRC = \
             startup_stm32f40xx.s \
             target/system_stm32f4xx.c \
-            drivers/accgyro_mpu.c \
+            drivers/accgyro/accgyro_mpu.c \
             drivers/adc_stm32f4xx.c \
             drivers/adc_stm32f4xx.c \
             drivers/bus_i2c_stm32f10x.c \
@@ -676,7 +678,7 @@ STM32F4xx_COMMON_SRC = \
 STM32F7xx_COMMON_SRC = \
             startup_stm32f745xx.s \
             target/system_stm32f7xx.c \
-            drivers/accgyro_mpu.c \
+            drivers/accgyro/accgyro_mpu.c \
             drivers/adc_stm32f7xx.c \
             drivers/bus_i2c_hal.c \
             drivers/dma_stm32f7xx.c \
