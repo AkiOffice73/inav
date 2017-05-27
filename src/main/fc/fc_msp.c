@@ -328,12 +328,8 @@ static void initActiveBoxIds(void)
     }
 #endif
 
-<<<<<<< HEAD
-	activeBoxIds[activeBoxIdCount++] = BOXFAILSAFE;
-=======
     activeBoxIds[activeBoxIdCount++] = BOXKILLSWITCH;
     activeBoxIds[activeBoxIdCount++] = BOXFAILSAFE;
->>>>>>> refs/remotes/iNavFlight/master
 }
 
 #define IS_ENABLED(mask) (mask == 0 ? 0 : 1)
