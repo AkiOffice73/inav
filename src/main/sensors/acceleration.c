@@ -23,30 +23,35 @@
 #include "platform.h"
 
 #include "common/axis.h"
-#include "common/maths.h"
 #include "common/filter.h"
+#include "common/maths.h"
 
+#include "config/config_reset.h"
 #include "config/parameter_group.h"
 #include "config/parameter_group_ids.h"
-#include "config/config_reset.h"
 
 #include "drivers/accgyro/accgyro.h"
 #include "drivers/accgyro/accgyro_adxl345.h"
 #include "drivers/accgyro/accgyro_bma280.h"
 #include "drivers/accgyro/accgyro_fake.h"
 #include "drivers/accgyro/accgyro_l3g4200d.h"
+#include "drivers/accgyro/accgyro_l3gd20.h"
+#include "drivers/accgyro/accgyro_lsm303dlhc.h"
 #include "drivers/accgyro/accgyro_mma845x.h"
 #include "drivers/accgyro/accgyro_mpu.h"
 #include "drivers/accgyro/accgyro_mpu3050.h"
 #include "drivers/accgyro/accgyro_mpu6050.h"
 #include "drivers/accgyro/accgyro_mpu6500.h"
-#include "drivers/accgyro/accgyro_l3gd20.h"
-#include "drivers/accgyro/accgyro_lsm303dlhc.h"
 #include "drivers/accgyro/accgyro_spi_mpu6000.h"
 #include "drivers/accgyro/accgyro_spi_mpu6500.h"
 #include "drivers/accgyro/accgyro_spi_mpu9250.h"
 #include "drivers/logging.h"
 #include "drivers/sensor.h"
+
+#include "fc/config.h"
+#include "fc/runtime_config.h"
+
+#include "io/beeper.h"
 
 #include "sensors/acceleration.h"
 #include "sensors/battery.h"
@@ -54,14 +59,10 @@
 #include "sensors/gyro.h"
 #include "sensors/sensors.h"
 
-#include "fc/config.h"
-#include "fc/runtime_config.h"
-
-#include "io/beeper.h"
-
 #ifdef USE_HARDWARE_REVISION_DETECTION
 #include "hardware_revision.h"
 #endif
+
 
 acc_t acc;                       // acc access functions
 
@@ -69,14 +70,21 @@ static uint16_t calibratingA = 0;      // the calibration is done is the main lo
 
 static biquadFilter_t accFilter[XYZ_AXIS_COUNT];
 
-PG_REGISTER_WITH_RESET_FN(accelerometerConfig_t, accelerometerConfig, PG_ACCELEROMETER_CONFIG, 0);
+#ifdef USE_ACC_NOTCH
+static filterApplyFnPtr accNotchFilterApplyFn;
+static void *accNotchFilter[XYZ_AXIS_COUNT];
+#endif
+
+PG_REGISTER_WITH_RESET_FN(accelerometerConfig_t, accelerometerConfig, PG_ACCELEROMETER_CONFIG, 1);
 
 void pgResetFn_accelerometerConfig(accelerometerConfig_t *instance)
 {
     RESET_CONFIG_2(accelerometerConfig_t, instance,
         .acc_align = ALIGN_DEFAULT,
         .acc_hardware = ACC_AUTODETECT,
-        .acc_lpf_hz = 15
+        .acc_lpf_hz = 15,
+        .acc_notch_hz = 0,
+        .acc_notch_cutoff = 1
     );
     RESET_CONFIG_2(flightDynamicsTrims_t, &instance->accZero,
         .raw[X] = 0,
@@ -455,6 +463,14 @@ void accUpdate(void)
         }
     }
 
+#ifdef USE_ACC_NOTCH
+    if (accelerometerConfig()->acc_notch_hz) {
+        for (int axis = 0; axis < XYZ_AXIS_COUNT; axis++) {
+            acc.accADC[axis] = lrintf(accNotchFilterApplyFn(accNotchFilter[axis], (float)acc.accADC[axis]));
+        }
+    }
+#endif
+
     if (!accIsCalibrationComplete()) {
         performAcclerationCalibration();
     }
@@ -480,8 +496,22 @@ void accInitFilters(void)
     if (acc.accTargetLooptime && accelerometerConfig()->acc_lpf_hz) {
         for (int axis = 0; axis < XYZ_AXIS_COUNT; axis++) {
             biquadFilterInitLPF(&accFilter[axis], accelerometerConfig()->acc_lpf_hz, acc.accTargetLooptime);
+        }    
+    }
+
+#ifdef USE_ACC_NOTCH
+    static biquadFilter_t accFilterNotch[XYZ_AXIS_COUNT];
+    accNotchFilterApplyFn = nullFilterApply;
+
+    if (acc.accTargetLooptime && accelerometerConfig()->acc_notch_hz) {
+        accNotchFilterApplyFn = (filterApplyFnPtr)biquadFilterApply;
+        for (int axis = 0; axis < XYZ_AXIS_COUNT; axis++) {
+            accNotchFilter[axis] = &accFilterNotch[axis];
+            biquadFilterInitNotch(accNotchFilter[axis], acc.accTargetLooptime, accelerometerConfig()->acc_notch_hz, accelerometerConfig()->acc_notch_cutoff);
         }
     }
+#endif
+
 }
 
 bool accIsHealthy(void)

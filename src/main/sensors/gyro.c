@@ -23,6 +23,7 @@
 #include "platform.h"
 
 #include "build/build_config.h"
+#include "build/debug.h"
 
 #include "common/axis.h"
 #include "common/maths.h"
@@ -61,8 +62,6 @@
 #include "sensors/boardalignment.h"
 #include "sensors/gyro.h"
 #include "sensors/sensors.h"
-
-#include "build/debug.h"
 
 #ifdef USE_HARDWARE_REVISION_DETECTION
 #include "hardware_revision.h"
@@ -154,7 +153,7 @@ STATIC_UNIT_TESTED gyroSensor_e gyroDetect(gyroDev_t *dev, gyroSensor_e gyroHard
 {
     dev->gyroAlign = ALIGN_DEFAULT;
 
-    switch(gyroHardware) {
+    switch (gyroHardware) {
     case GYRO_AUTODETECT:
         // fallthrough
 
@@ -399,7 +398,6 @@ STATIC_UNIT_TESTED void performGyroCalibration(gyroDev_t *dev, gyroCalibration_t
 
     if (isOnFinalGyroCalibrationCycle(gyroCalibration)) {
         schedulerResetTaskStatistics(TASK_SELF); // so calibration cycles do not pollute tasks statistics
-        beeper(BEEPER_GYRO_CALIBRATED);
     }
     gyroCalibration->calibratingG--;
 }

@@ -57,6 +57,10 @@ typedef enum {
     BAUD_250000,
     BAUD_460800,
     BAUD_921600,
+    BAUD_1000000,
+    BAUD_1500000,
+    BAUD_2000000,
+    BAUD_2470000
 } baudRate_e;
 
 extern const uint32_t baudRates[];
@@ -130,7 +134,7 @@ portSharing_e determinePortSharing(const serialPortConfig_t *portConfig, serialP
 bool isSerialPortShared(const serialPortConfig_t *portConfig, uint16_t functionMask, serialPortFunction_e sharedWithFunction);
 
 serialPortUsage_t *findSerialPortUsageByIdentifier(serialPortIdentifier_e identifier);
-
+int findSerialPortIndexByIdentifier(serialPortIdentifier_e identifier);
 //
 // runtime
 //

@@ -22,6 +22,7 @@
 
 #define USE_HARDWARE_REVISION_DETECTION
 #define HW_PIN                  PB2
+#define BRUSHED_ESC_AUTODETECT
 
 // LED's V1
 #define LED0                    PB4
@@ -80,6 +81,7 @@
 #define UART3_RX_PIN            PB11
 
 #define USE_I2C
+#define USE_I2C_PULLUP
 #define I2C_DEVICE (I2CDEV_2) // SDA (PA10/AF4), SCL (PA9/AF4)
 
 #define I2C2_SCL                PA9
@@ -96,7 +98,8 @@
 
 #define USE_ADC
 #define ADC_INSTANCE            ADC2
-#define VBAT_ADC_PIN            PA4
+#define ADC_CHANNEL_1_PIN       PA4
+#define VBAT_ADC_CHANNEL        ADC_CHN_1
 #define VBAT_SCALE_DEFAULT      20
 
 #define SPEKTRUM_BIND
@@ -108,7 +111,6 @@
 #define BINDPLUG_PIN            PB12
 
 
-#define BRUSHED_MOTORS
 #define DEFAULT_FEATURES        FEATURE_MOTOR_STOP
 #define DEFAULT_RX_FEATURE      FEATURE_RX_SERIAL
 #define SERIALRX_PROVIDER       SERIALRX_SPEKTRUM2048
@@ -117,6 +119,8 @@
 
 // Number of available PWM outputs
 #define MAX_PWM_OUTPUT_PORTS    10
+
+#define USE_SERIAL_4WAY_BLHELI_INTERFACE
 
 // IO - assuming 303 in 64pin package, TODO
 #define TARGET_IO_PORTA         0xffff

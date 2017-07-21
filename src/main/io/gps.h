@@ -31,8 +31,9 @@ typedef enum {
     GPS_NMEA = 0,
     GPS_UBLOX,
     GPS_I2CNAV,
-	GPS_NAZA,
-	GPS_NMEA_PSRF,
+    GPS_NAZA,
+    GPS_UBLOX7PLUS,
+    GPS_NMEA_PSRF,
     GPS_PROVIDER_COUNT
 } gpsProvider_e;
 

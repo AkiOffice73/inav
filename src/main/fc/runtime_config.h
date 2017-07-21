@@ -82,7 +82,8 @@ typedef enum {
     COMPASS_CALIBRATED      = (1 << 8),
     ACCELEROMETER_CALIBRATED= (1 << 9),
     PWM_DRIVER_AVAILABLE    = (1 << 10),
-	OBSTACLE_DETECTED		= (1 << 11),
+    HELICOPTER              = (1 << 11),
+	OBSTACLE_DETECTED		= (1 << 12)
 } stateFlags_t;
 
 #define DISABLE_STATE(mask) (stateFlags &= ~(mask))
@@ -91,7 +92,7 @@ typedef enum {
 
 extern uint32_t stateFlags;
 
-typedef enum { 
+typedef enum {
     FLM_MANUAL,
     FLM_ACRO,
     FLM_ANGLE,

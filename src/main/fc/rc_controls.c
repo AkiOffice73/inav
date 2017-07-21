@@ -23,6 +23,8 @@
 
 #include "platform.h"
 
+#include "build/debug.h"
+
 #include "blackbox/blackbox.h"
 
 #include "common/axis.h"
@@ -63,6 +65,9 @@
 
 // true if arming is done via the sticks (as opposed to a switch)
 static bool isUsingSticksToArm = true;
+
+// Count of mode activation ranged (per box mode)
+static uint8_t specifiedConditionCountPerMode[CHECKBOX_ITEM_COUNT];
 
 #ifdef NAV
 // true if pilot has any of GPS modes configured
@@ -275,7 +280,7 @@ void processRcStickPositions(throttleStatus_e throttleStatus, bool disarm_kill_s
         beeper(success ? BEEPER_ACTION_SUCCESS : BEEPER_ACTION_FAIL);
     }
 #endif
-    
+
     // Multiple configuration profiles
     if (rcSticks == THR_LO + YAW_LO + PIT_CE + ROL_LO)          // ROLL left  -> Profile 1
         i = 1;
@@ -373,20 +378,13 @@ void updateActivatedModes(void)
     // Unfortunately for AND logic it's not enough to simply check if any of the specified channel range conditions are valid for a mode.
     // We need to count the total number of conditions specified for each mode, and check that all those conditions are currently valid.
 
-    uint8_t specifiedConditionCountPerMode[CHECKBOX_ITEM_COUNT];
-    uint8_t validConditionCountPerMode[CHECKBOX_ITEM_COUNT];
+    uint8_t activeConditionCountPerMode[CHECKBOX_ITEM_COUNT];
+    memset(activeConditionCountPerMode, 0, CHECKBOX_ITEM_COUNT);
 
-    memset(specifiedConditionCountPerMode, 0, CHECKBOX_ITEM_COUNT);
-    memset(validConditionCountPerMode, 0, CHECKBOX_ITEM_COUNT);
-
-    for (int modeIndex = 0; modeIndex < MAX_MODE_ACTIVATION_CONDITION_COUNT; modeIndex++) {
-
-        // Increment the number of specified conditions for this mode
-        specifiedConditionCountPerMode[modeActivationConditions(modeIndex)->modeId]++;
-
-        if (isRangeActive(modeActivationConditions(modeIndex)->auxChannelIndex, &modeActivationConditions(modeIndex)->range)) {
+    for (int index = 0; index < MAX_MODE_ACTIVATION_CONDITION_COUNT; index++) {
+        if (isRangeActive(modeActivationConditions(index)->auxChannelIndex, &modeActivationConditions(index)->range)) {
             // Increment the number of valid conditions for this mode
-            validConditionCountPerMode[modeActivationConditions(modeIndex)->modeId]++;
+            activeConditionCountPerMode[modeActivationConditions(index)->modeId]++;
         }
     }
 
@@ -402,13 +400,13 @@ void updateActivatedModes(void)
 
             if (modeActivationOperatorConfig()->modeActivationOperator == MODE_OPERATOR_AND) {
                 // AND the conditions
-                if (validConditionCountPerMode[modeIndex] == specifiedConditionCountPerMode[modeIndex]) {
+                if (activeConditionCountPerMode[modeIndex] == specifiedConditionCountPerMode[modeIndex]) {
                     ACTIVATE_RC_MODE(modeIndex);
                 }
             }
             else {
                 // OR the conditions
-                if (validConditionCountPerMode[modeIndex] > 0) {
+                if (activeConditionCountPerMode[modeIndex] > 0) {
                     ACTIVATE_RC_MODE(modeIndex);
                 }
             }
@@ -422,6 +420,13 @@ int32_t getRcStickDeflection(int32_t axis, uint16_t midrc) {
 
 void updateUsedModeActivationConditionFlags(void)
 {
+    memset(specifiedConditionCountPerMode, 0, CHECKBOX_ITEM_COUNT);
+    for (int index = 0; index < MAX_MODE_ACTIVATION_CONDITION_COUNT; index++) {
+        if (IS_RANGE_USABLE(&modeActivationConditions(index)->range)) {
+            specifiedConditionCountPerMode[modeActivationConditions(index)->modeId]++;
+        }
+    }
+
     isUsingSticksToArm = !isModeActivationConditionPresent(BOXARM);
 
 #ifdef NAV
@@ -429,4 +434,12 @@ void updateUsedModeActivationConditionFlags(void)
                         isModeActivationConditionPresent(BOXNAVRTH) ||
                         isModeActivationConditionPresent(BOXNAVWP);
 #endif
+}
+
+void configureModeActivationCondition(int macIndex, boxId_e modeId, uint8_t auxChannelIndex, uint16_t startPwm, uint16_t endPwm)
+{
+    modeActivationConditionsMutable(macIndex)->modeId = modeId;
+    modeActivationConditionsMutable(macIndex)->auxChannelIndex = auxChannelIndex;
+    modeActivationConditionsMutable(macIndex)->range.startStep = CHANNEL_VALUE_TO_STEP(startPwm);
+    modeActivationConditionsMutable(macIndex)->range.endStep = CHANNEL_VALUE_TO_STEP(endPwm);
 }

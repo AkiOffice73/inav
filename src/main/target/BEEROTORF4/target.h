@@ -53,6 +53,13 @@
 #define BARO
 #define USE_BARO_BMP280
 
+#define MAG
+#define USE_MAG_AK8963
+#define USE_MAG_AK8975
+#define USE_MAG_HMC5883
+#define MAG_HMC5883_ALIGN       CW90_DEG
+#define USE_MAG_MAG3110
+
 #define OSD
 #define USE_MAX7456
 #define MAX7456_SPI_INSTANCE    SPI3
@@ -141,13 +148,12 @@
 
 #define BOARD_HAS_VOLTAGE_DIVIDER
 #define USE_ADC
-//#define ADC1_DMA_STREAM         DMA2_Stream0
-
-#define VBAT_ADC_PIN            PC0
-
-#define CURRENT_METER_ADC_PIN   PC1
-
-#define RSSI_ADC_PIN            PC2
+#define ADC_CHANNEL_1_PIN               PC0
+#define ADC_CHANNEL_2_PIN               PC1
+#define ADC_CHANNEL_3_PIN               PC2
+#define VBAT_ADC_CHANNEL                ADC_CHN_1
+#define CURRENT_METER_ADC_CHANNEL       ADC_CHN_2
+#define RSSI_ADC_CHANNEL                ADC_CHN_3
 
 #define LED_STRIP
 #define WS2811_GPIO_AF                  GPIO_AF_TIM4
@@ -178,6 +184,8 @@
 #define DISABLE_RX_PWM_FEATURE
 #define SERIALRX_PROVIDER       SERIALRX_SBUS
 #define SERIALRX_UART           SERIAL_PORT_USART2
+
+#define SENSORS_SET (SENSOR_ACC|SENSOR_MAG|SENSOR_BARO)
 
 #define USE_SERIAL_4WAY_BLHELI_INTERFACE
 

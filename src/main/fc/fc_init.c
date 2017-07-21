@@ -52,6 +52,7 @@
 #include "drivers/serial_uart.h"
 #include "drivers/accgyro/accgyro.h"
 #include "drivers/compass/compass.h"
+#include "drivers/pwm_esc_detect.h"
 #include "drivers/pwm_mapping.h"
 #include "drivers/pwm_output.h"
 #include "drivers/pwm_rx.h"
@@ -170,30 +171,34 @@ void init(void)
 
     printfSupportInit();
 
+    systemInit();
+
+    // initialize IO (needed for all IO operations)
+    IOInitGlobal();
+
+#ifdef USE_HARDWARE_REVISION_DETECTION
+    detectHardwareRevision();
+#endif
+
+#ifdef BRUSHED_ESC_AUTODETECT
+    detectBrushedESC();
+#endif
+
     initEEPROM();
 
     ensureEEPROMContainsValidData();
     readEEPROM();
 
-    addBootlogEvent2(BOOT_EVENT_CONFIG_LOADED, BOOT_EVENT_FLAGS_NONE);
-    systemState |= SYSTEM_STATE_CONFIG_LOADED;
-
-    debugMode = systemConfig()->debug_mode;
-
-    systemInit();
-
     i2cSetOverclock(systemConfig()->i2c_overclock);
-
-    // initialize IO (needed for all IO operations)
-    IOInitGlobal();
 
 #ifdef USE_HARDWARE_PREBOOT_SETUP
     initialisePreBootHardware();
 #endif
 
-#ifdef USE_HARDWARE_REVISION_DETECTION
-    detectHardwareRevision();
-#endif
+    addBootlogEvent2(BOOT_EVENT_CONFIG_LOADED, BOOT_EVENT_FLAGS_NONE);
+    systemState |= SYSTEM_STATE_CONFIG_LOADED;
+
+    debugMode = systemConfig()->debug_mode;
 
     // Latch active features to be used for feature() in the remainder of init().
     latchActiveFeatures();
@@ -228,10 +233,6 @@ void init(void)
 
     timerInit();  // timer must be initialized before any channel is allocated
 
-#if !defined(USE_HAL_DRIVER)
-    dmaInit();
-#endif
-
 #if defined(AVOID_UART2_FOR_PWM_PPM)
     serialInit(feature(FEATURE_SOFTSERIAL),
             feature(FEATURE_RX_PPM) || feature(FEATURE_RX_PARALLEL_PWM) ? SERIAL_PORT_USART2 : SERIAL_PORT_NONE);
@@ -250,20 +251,21 @@ void init(void)
     drv_pwm_config_t pwm_params;
     memset(&pwm_params, 0, sizeof(pwm_params));
 
-#ifdef SONAR
+#ifdef USE_RANGEFINDER_HCSR04
     // HC-SR04 has a dedicated connection to FC and require two pins
     if (rangefinderConfig()->rangefinder_hardware == RANGEFINDER_HCSR04) {
-        const rangefinderHardwarePins_t *sonarHardware = sonarGetHardwarePins();
-        if (sonarHardware) {
-            pwm_params.useSonar = true;
-            pwm_params.sonarIOConfig.triggerTag = sonarHardware->triggerTag;
-            pwm_params.sonarIOConfig.echoTag = sonarHardware->echoTag;
+        const rangefinderHardwarePins_t *rangefinderHardwarePins = rangefinderGetHardwarePins();
+        if (rangefinderHardwarePins) {
+            pwm_params.useTriggerRangefinder = true;
+            pwm_params.rangefinderIOConfig.triggerTag = rangefinderHardwarePins->triggerTag;
+            pwm_params.rangefinderIOConfig.echoTag = rangefinderHardwarePins->echoTag;
         }
     }
 #endif
 
     // when using airplane/wing mixer, servo/motor outputs are remapped
-    pwm_params.airplane = STATE(FIXED_WING);
+    pwm_params.flyingPlatformType = getFlyingPlatformType();
+
 #if defined(USE_UART2) && defined(STM32F10X)
     pwm_params.useUART2 = doesConfigurationUsePort(SERIAL_PORT_USART2);
 #endif
@@ -287,7 +289,7 @@ void init(void)
     pwm_params.useSerialRx = feature(FEATURE_RX_SERIAL);
 
 #ifdef USE_SERVOS
-    pwm_params.useServos = isMixerUsingServos();
+    pwm_params.useServoOutputs = isMixerUsingServos();
     pwm_params.useChannelForwarding = feature(FEATURE_CHANNEL_FORWARDING);
     pwm_params.servoCenterPulse = servoConfig()->servoCenterPulse;
     pwm_params.servoPwmRate = servoConfig()->servoPwmRate;
@@ -323,7 +325,8 @@ void init(void)
     servo handling mechanism, since external device will do that
     */
     if (feature(FEATURE_PWM_SERVO_DRIVER)) {
-        pwm_params.useServos = false;
+        pwm_params.useServoOutputs = false;
+        pwm_params.useChannelForwarding = false;
     }
 #endif
 
@@ -391,7 +394,7 @@ void init(void)
     updateHardwareRevision();
 #endif
 
-#if defined(SONAR) && defined(USE_SOFTSERIAL1)
+#if defined(USE_RANGEFINDER_HCSR04) && defined(USE_SOFTSERIAL1)
 #if defined(FURYF3) || defined(OMNIBUS) || defined(SPRACINGF3MINI)
     if ((rangefinderConfig()->rangefinder_hardware == RANGEFINDER_HCSR04) && feature(FEATURE_SOFTSERIAL)) {
         serialRemovePort(SERIAL_PORT_SOFTSERIAL1);
@@ -399,27 +402,23 @@ void init(void)
 #endif
 #endif
 
-#if defined(SONAR) && defined(USE_SOFTSERIAL2) && defined(SPRACINGF3)
+#if defined(USE_RANGEFINDER_HCSR04) && defined(USE_SOFTSERIAL2) && defined(SPRACINGF3)
     if ((rangefinderConfig()->rangefinder_hardware == RANGEFINDER_HCSR04) && feature(FEATURE_SOFTSERIAL)) {
         serialRemovePort(SERIAL_PORT_SOFTSERIAL2);
     }
 #endif
 
 #ifdef USE_I2C
-#if defined(NAZE)
-    #if defined(AIRHERO32)
+#if defined(I2C_DEVICE)
+    #if defined(I2C_DEVICE_SHARES_UART3)
         if (!doesConfigurationUsePort(SERIAL_PORT_USART3)) {
             i2cInit(I2C_DEVICE);
         }
     #else
         i2cInit(I2C_DEVICE);
     #endif
-#elif defined(I2C_DEVICE_SHARES_UART3)
-    if (!doesConfigurationUsePort(SERIAL_PORT_USART3)) {
-        i2cInit(I2C_DEVICE);
-    }
-#else
-    i2cInit(I2C_DEVICE);
+#endif
+
 #if defined(I2C_DEVICE_EXT)
     #if defined(I2C_DEVICE_EXT_SHARES_UART3)
         if (!doesConfigurationUsePort(SERIAL_PORT_USART3)) {
@@ -430,18 +429,30 @@ void init(void)
     #endif
 #endif
 #endif
-#endif
 
 #ifdef USE_ADC
     drv_adc_config_t adc_params;
+    memset(&adc_params, 0, sizeof(adc_params));
 
-    adc_params.enableVBat = feature(FEATURE_VBAT);
-    adc_params.enableRSSI = feature(FEATURE_RSSI_ADC);
-    adc_params.enableCurrentMeter = feature(FEATURE_CURRENT_METER);
-    adc_params.enableExternal1 = false;
-#ifdef OLIMEXINO
-    adc_params.enableExternal1 = true;
+    // Allocate and initialize ADC channels if features are configured - can't rely on sensor detection here, it's done later
+    if (feature(FEATURE_VBAT)) {
+        adc_params.adcFunctionChannel[ADC_BATTERY] = adcChannelConfig()->adcFunctionChannel[ADC_BATTERY];
+    }
+
+    if (feature(FEATURE_RSSI_ADC)) {
+        adc_params.adcFunctionChannel[ADC_RSSI] = adcChannelConfig()->adcFunctionChannel[ADC_RSSI];
+    }
+
+    if (feature(FEATURE_CURRENT_METER) && batteryConfig()->currentMeterType == CURRENT_SENSOR_ADC) {
+        adc_params.adcFunctionChannel[ADC_CURRENT] =  adcChannelConfig()->adcFunctionChannel[ADC_CURRENT];
+    }
+
+#if defined(PITOT) && defined(USE_PITOT_ADC)
+    if (pitotmeterConfig()->pitot_hardware == PITOT_ADC || pitotmeterConfig()->pitot_hardware == PITOT_AUTODETECT) {
+        adc_params.adcFunctionChannel[ADC_AIRSPEED] = adcChannelConfig()->adcFunctionChannel[ADC_AIRSPEED];
+    }
 #endif
+
     adcInit(&adc_params);
 #endif
 

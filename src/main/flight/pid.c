@@ -91,10 +91,9 @@ typedef struct {
     static filterApplyFnPtr notchFilterApplyFn;
 #endif
 
-extern uint8_t motorCount;
-extern bool motorLimitReached;
 extern float dT;
 
+float headingHoldCosZLimit;
 int16_t headingHoldTarget;
 static pt1Filter_t headingHoldRateFilter;
 
@@ -108,7 +107,7 @@ int32_t axisPID_P[FLIGHT_DYNAMICS_INDEX_COUNT], axisPID_I[FLIGHT_DYNAMICS_INDEX_
 
 static pidState_t pidState[FLIGHT_DYNAMICS_INDEX_COUNT];
 
-PG_REGISTER_PROFILE_WITH_RESET_TEMPLATE(pidProfile_t, pidProfile, PG_PID_PROFILE, 2);
+PG_REGISTER_PROFILE_WITH_RESET_TEMPLATE(pidProfile_t, pidProfile, PG_PID_PROFILE, 3);
 
 PG_RESET_TEMPLATE(pidProfile_t, pidProfile,
         .bank_mc = {
@@ -192,6 +191,7 @@ PG_RESET_TEMPLATE(pidProfile_t, pidProfile,
 
         .fixedWingItermThrowLimit = FW_ITERM_THROW_LIMIT_DEFAULT,
         .fixedWingReferenceAirspeed = 1000,
+        .fixedWingCoordinatedYawGain = 1.0f,
 );
 
 void pidInit(void)
@@ -203,6 +203,10 @@ void pidInit(void)
     for (int axis = 0; axis < 3; ++ axis) {
         firFilterInit(&pidState[axis].gyroRateFilter, pidState[axis].gyroRateBuf, PID_GYRO_RATE_BUF_LENGTH, dtermCoeffs);
     }
+
+    // Calculate max overall tilt (max pitch + max roll combined) as a limit to heading hold
+    headingHoldCosZLimit = cos_approx(DECIDEGREES_TO_RADIANS(pidProfile()->max_angle_inclination[FD_ROLL])) *
+                           cos_approx(DECIDEGREES_TO_RADIANS(pidProfile()->max_angle_inclination[FD_PITCH]));
 }
 
 #ifdef USE_DTERM_NOTCH
@@ -210,7 +214,7 @@ bool pidInitFilters(void)
 {
     const uint32_t refreshRate = getPidUpdateRate();
     notchFilterApplyFn = nullFilterApply;
-    if(refreshRate != 0 && pidProfile()->dterm_soft_notch_hz != 0){
+    if (refreshRate != 0 && pidProfile()->dterm_soft_notch_hz != 0){
         notchFilterApplyFn = (filterApplyFnPtr)biquadFilterApply;
         for (int axis = 0; axis < 3; ++ axis) {
             biquadFilterInitNotch(&pidState[axis].deltaNotchFilter, refreshRate, pidProfile()->dterm_soft_notch_hz, pidProfile()->dterm_soft_notch_cutoff);
@@ -477,7 +481,7 @@ static void pidApplyMulticopterRateController(pidState_t *pidState, flight_dynam
     // Calculate new P-term
     float newPTerm = rateError * pidState->kP;
     // Constrain YAW by yaw_p_limit value if not servo driven (in that case servo limits apply)
-    if (axis == FD_YAW && (motorCount >= 4 && pidProfile()->yaw_p_limit)) {
+    if (axis == FD_YAW && (getMotorCount() >= 4 && pidProfile()->yaw_p_limit)) {
         newPTerm = constrain(newPTerm, -pidProfile()->yaw_p_limit, pidProfile()->yaw_p_limit);
     }
 
@@ -519,7 +523,7 @@ static void pidApplyMulticopterRateController(pidState_t *pidState, flight_dynam
     pidState->errorGyroIf += (rateError * pidState->kI * antiWindupScaler * dT) + ((newOutputLimited - newOutput) * pidState->kT * dT);
 
     // Don't grow I-term if motors are at their limit
-    if (STATE(ANTI_WINDUP) || motorLimitReached) {
+    if (STATE(ANTI_WINDUP) || mixerIsOutputSaturated()) {
         pidState->errorGyroIf = constrainf(pidState->errorGyroIf, -pidState->errorGyroIfLimit, pidState->errorGyroIfLimit);
     } else {
         pidState->errorGyroIfLimit = ABS(pidState->errorGyroIf);
@@ -552,12 +556,13 @@ int16_t getHeadingHoldTarget() {
 
 static uint8_t getHeadingHoldState()
 {
-    if (!STATE(SMALL_ANGLE)) {
+    // Don't apply heading hold if overall tilt is greater than maximum angle inclination
+    if (calculateCosTiltAngle() < headingHoldCosZLimit) {
         return HEADING_HOLD_DISABLED;
     }
 
 #if defined(NAV)
-    int navHeadingState = naivationGetHeadingControlState();
+    int navHeadingState = navigationGetHeadingControlState();
     // NAV will prevent MAG_MODE from activating, but require heading control
     if (navHeadingState != NAV_HEADING_CONTROL_NONE) {
         // Apply maghold only if heading control is in auto mode
@@ -567,7 +572,7 @@ static uint8_t getHeadingHoldState()
     }
     else
 #endif
-    if (ABS(rcCommand[YAW]) < 15 && FLIGHT_MODE(HEADING_MODE)) {
+    if (ABS(rcCommand[YAW]) == 0 && FLIGHT_MODE(HEADING_MODE)) {
         return HEADING_HOLD_ENABLED;
     } else {
         return HEADING_HOLD_UPDATE_HEADING;
@@ -665,10 +670,11 @@ static void pidTurnAssistant(pidState_t *pidState)
             // Constrain to somewhat sane limits - 10km/h - 216km/h
             airspeedForCoordinatedTurn = constrainf(airspeedForCoordinatedTurn, 300, 6000);
 
+            // Calculate rate of turn in Earth frame according to FAA's Pilot's Handbook of Aeronautical Knowledge
             float bankAngle = DECIDEGREES_TO_RADIANS(attitude.values.roll);
-            float coordinatedTurnRateOffset = GRAVITY_CMSS * tan_approx(-bankAngle) / airspeedForCoordinatedTurn;
+            float coordinatedTurnRateEarthFrame = GRAVITY_CMSS * tan_approx(-bankAngle) / airspeedForCoordinatedTurn;
 
-            targetRates.V.Z = pidState[YAW].rateTarget + RADIANS_TO_DEGREES(coordinatedTurnRateOffset);
+            targetRates.V.Z = RADIANS_TO_DEGREES(coordinatedTurnRateEarthFrame);
         }
         else {
             // Don't allow coordinated turn calculation if airplane is in hard bank or steep climb/dive
@@ -682,14 +688,17 @@ static void pidTurnAssistant(pidState_t *pidState)
     // Transform calculated rate offsets into body frame and apply
     imuTransformVectorEarthToBody(&targetRates);
 
-    // Add in roll and pitch, replace yaw completely
+    // Add in roll and pitch
     pidState[ROLL].rateTarget = constrainf(pidState[ROLL].rateTarget + targetRates.V.X, -currentControlRateProfile->rates[ROLL] * 10.0f, currentControlRateProfile->rates[ROLL] * 10.0f);
     pidState[PITCH].rateTarget = constrainf(pidState[PITCH].rateTarget + targetRates.V.Y, -currentControlRateProfile->rates[PITCH] * 10.0f, currentControlRateProfile->rates[PITCH] * 10.0f);
-    pidState[YAW].rateTarget = constrainf(targetRates.V.Z, -currentControlRateProfile->rates[YAW] * 10.0f, currentControlRateProfile->rates[YAW] * 10.0f);
 
-    debug[0] = pidState[ROLL].rateTarget;
-    debug[1] = pidState[PITCH].rateTarget;
-    debug[2] = pidState[YAW].rateTarget;
+    // Replace YAW on quads - add it in on airplanes
+    if (STATE(FIXED_WING)) {
+        pidState[YAW].rateTarget = constrainf(pidState[YAW].rateTarget + targetRates.V.Z * pidProfile()->fixedWingCoordinatedYawGain, -currentControlRateProfile->rates[YAW] * 10.0f, currentControlRateProfile->rates[YAW] * 10.0f);
+    }
+    else {
+        pidState[YAW].rateTarget = constrainf(targetRates.V.Z, -currentControlRateProfile->rates[YAW] * 10.0f, currentControlRateProfile->rates[YAW] * 10.0f);
+    }
 }
 #endif
 
@@ -726,7 +735,7 @@ void pidController(void)
     }
 
 #ifdef USE_FLM_TURN_ASSIST
-    if (FLIGHT_MODE(TURN_ASSISTANT) || naivationRequiresTurnAssistance()) {
+    if (FLIGHT_MODE(TURN_ASSISTANT) || navigationRequiresTurnAssistance()) {
         pidTurnAssistant(pidState);
     }
 #endif

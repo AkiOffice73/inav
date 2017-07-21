@@ -113,12 +113,21 @@ static gpsProviderDescriptor_t  gpsProviders[GPS_PROVIDER_COUNT] = {
     { GPS_TYPE_NA, 0, false,  NULL, NULL },
 #endif
 
+    /* UBLOX7PLUS binary */
+#ifdef GPS_PROTO_UBLOX_NEO7PLUS
+    { GPS_TYPE_SERIAL, MODE_RXTX, false,  NULL, &gpsHandleUBLOX },
+#else
+    { GPS_TYPE_NA, 0, false,  NULL, NULL },
+#endif
+
 	/* NMEA_PSRF GPS */
 #ifdef GPS_PROTO_NMEA
 	{ GPS_TYPE_SERIAL, MODE_RXTX, false, NULL, &gpsHandleNMEA },
 #else
 	{ GPS_TYPE_NA, 0, false,  NULL, NULL },
 #endif
+
+
 };
 
 PG_REGISTER_WITH_RESET_TEMPLATE(gpsConfig_t, gpsConfig, PG_GPS_CONFIG, 0);
@@ -423,14 +432,14 @@ void gpsEnablePassthrough(serialPort_t *gpsPassthroughPort)
     waitForSerialPortToFinishTransmitting(gpsState.gpsPort);
     waitForSerialPortToFinishTransmitting(gpsPassthroughPort);
 
-    if(!(gpsState.gpsPort->mode & MODE_TX))
+    if (!(gpsState.gpsPort->mode & MODE_TX))
     serialSetMode(gpsState.gpsPort, gpsState.gpsPort->mode | MODE_TX);
 
     LED0_OFF;
     LED1_OFF;
 
     char c;
-    while(1) {
+    while (1) {
         if (serialRxBytesWaiting(gpsState.gpsPort)) {
             LED0_ON;
             c = serialRead(gpsState.gpsPort);
