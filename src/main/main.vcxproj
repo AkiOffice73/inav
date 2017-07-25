@@ -198,6 +198,9 @@
     <ClCompile Include="navigation\navigation_multicopter.c" />
     <ClCompile Include="navigation\navigation_pos_estimator.c" />
     <ClCompile Include="rx\crsf.c" />
+    <ClCompile Include="rx\eleres.c">
+      <DeploymentContent>false</DeploymentContent>
+    </ClCompile>
     <ClCompile Include="rx\ibus.c" />
     <ClCompile Include="rx\jetiexbus.c" />
     <ClCompile Include="rx\msp.c" />
@@ -474,6 +477,9 @@
     <ClInclude Include="navigation\navigation_private.h" />
     <ClInclude Include="platform.h" />
     <ClInclude Include="rx\crsf.h" />
+    <ClInclude Include="rx\eleres.h">
+      <DeploymentContent>false</DeploymentContent>
+    </ClInclude>
     <ClInclude Include="rx\ibus.h" />
     <ClInclude Include="rx\jetiexbus.h" />
     <ClInclude Include="rx\msp.h" />
