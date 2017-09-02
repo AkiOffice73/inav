@@ -665,6 +665,7 @@ HIGHEND_SRC = \
             io/ledstrip.c \
             io/osd.c \
             navigation/navigation.c \
+            xf/navigation/navigation_extend.c \
             navigation/navigation_fixedwing.c \
             navigation/navigation_fw_launch.c \
             navigation/navigation_geo.c \

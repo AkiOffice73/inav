@@ -301,6 +301,11 @@
 // #define MSP_BIND                 240    //in message          no param
 // #define MSP_ALARMS               242
 
+//2byte msp command head
+#define MSP_EXTEND				 249
+#define MSP_EXTEND_NAV_FOLLOW    101
+#define MSP_EXTEND_NAV_SURROUND	 102
+
 #define MSP_EEPROM_WRITE         250    //in message          no param
 #define MSP_RESERVE_1            251    //reserved for system usage
 #define MSP_RESERVE_2            252    //reserved for system usage

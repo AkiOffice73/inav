@@ -21,7 +21,7 @@
 #include "axis.h"
 #include "maths.h"
 
-// http://lolengine.net/blog/2011/12/21/better-function-approximations
+// http://lolengine.net/blog/2012011/12/21/better-function-approximations
 // Chebyshev http://stackoverflow.com/questions/345085/how-do-trigonometric-functions-work/345117#345117
 // Thanks for ledvinap for making such accuracy possible! See: https://github.com/cleanflight/cleanflight/issues/940#issuecomment-110323384
 // https://github.com/Crashpilot1000/HarakiriWebstore1/blob/master/src/mw.c#L1235

@@ -300,6 +300,7 @@
     <ClCompile Include="vcp_hal\usbd_desc.c" />
     <ClCompile Include="xf\drivers\tofr_aip01.c" />
     <ClCompile Include="xf\inav151xf01_serial_cli.c" />
+    <ClCompile Include="xf\navigation\navigation_extend.c" />
     <ClCompile Include="xf\sensors\tofr.c" />
   </ItemGroup>
   <ItemGroup>
@@ -578,6 +579,7 @@
     <ClInclude Include="vcp_hal\usbd_conf.h" />
     <ClInclude Include="vcp_hal\usbd_desc.h" />
     <ClInclude Include="xf\drivers\tofr_aip01.h" />
+    <ClInclude Include="xf\navigation\navigation_extend.h" />
     <ClInclude Include="xf\sensors\tofr.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">

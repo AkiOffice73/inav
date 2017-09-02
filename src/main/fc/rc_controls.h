@@ -51,7 +51,11 @@ typedef enum {
     BOXAUTOTUNE     = 28,
     BOXAVOIDANCE    = 29,
     BOXMCLAUNCH     = 30,
-    CHECKBOX_ITEM_COUNT
+
+	BOXSAVEPOS_A    = 31,  //waypoint 201
+	BOXSAVEPOS_B    = 32,  //waypoint 202
+	BOXSURROUND_AB  = 33,  //center = waypoint201    start = waypoint202
+	CHECKBOX_ITEM_COUNT
 } boxId_e;
 
 extern uint32_t rcModeActivationMask;

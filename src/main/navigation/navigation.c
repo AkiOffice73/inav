@@ -46,6 +46,7 @@
 #include "io/gps.h"
 
 #include "navigation/navigation.h"
+#include "xf/navigation/navigation_extend.h"
 #include "navigation/navigation_private.h"
 
 #include "sensors/sensors.h"
@@ -2039,6 +2040,11 @@ void getWaypoint(uint8_t wpNumber, navWaypoint_t * wpData)
             *wpData = posControl.waypointList[wpNumber - 1];
         }
     }
+	//extend POS Data 200~209
+	else if ((wpNumber >= NAV_EXTEND_WAYPOINT_SHIFT) && (wpNumber < NAV_EXTEND_WAYPOINT_SHIFT + NAV_MAX_EXTEND_WAYPOINTS))
+	{
+		*wpData = extendWaypointList[wpNumber];
+	}
 }
 
 void setWaypoint(uint8_t wpNumber, const navWaypoint_t * wpData)
@@ -2088,7 +2094,12 @@ void setWaypoint(uint8_t wpNumber, const navWaypoint_t * wpData)
                 posControl.waypointListValid = (wpData->flag == NAV_WP_FLAG_LAST);
             }
         }
-    }
+	}
+	//extend POS Data 200~209
+	else if ((wpNumber >= NAV_EXTEND_WAYPOINT_SHIFT) && (wpNumber < NAV_EXTEND_WAYPOINT_SHIFT + NAV_MAX_EXTEND_WAYPOINTS))
+	{
+		extendWaypointList[wpNumber] = *wpData;
+	}
 }
 
 void resetWaypointList(void)

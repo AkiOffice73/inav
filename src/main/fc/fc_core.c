@@ -67,6 +67,7 @@
 #include "msp/msp_serial.h"
 
 #include "navigation/navigation.h"
+#include "xf/navigation/navigation_extend.h"
 
 #include "rx/rx.h"
 #include "rx/msp.h"
@@ -491,17 +492,57 @@ void processRx(timeUs_t currentTimeUs)
         }
         if (IS_RC_MODE_ACTIVE(BOXHEADADJ)) {
             headFreeModeHold = DECIDEGREES_TO_DEGREES(attitude.values.yaw); // acquire new heading
-
 			//TODO #20160901%phis105 暫時用重設無頭模式航向的功能來開關避障(rcModeIsActive(BOXHEADADJ) = avoidance Enable)
-			updateAvoidanceModeState(true);
-			ENABLE_FLIGHT_MODE(AVOIDANCE_MODE);
+			//updateAvoidanceModeState(true);
+			//ENABLE_FLIGHT_MODE(AVOIDANCE_MODE);
 		} else {
 			//TODO #20160901%phis105 暫時用重設無頭模式航向的功能來開關避障(rcModeIsActive(BOXHEADADJ) = avoidance Enable)
-			updateAvoidanceModeState(false);
-			DISABLE_FLIGHT_MODE(AVOIDANCE_MODE);
+			//updateAvoidanceModeState(false);
+			//DISABLE_FLIGHT_MODE(AVOIDANCE_MODE);
 		}
     }
 #endif
+
+	//Avoidance Mode
+	if (IS_RC_MODE_ACTIVE(BOXAVOIDANCE)) {
+		//TODO: 目前避撞模式是依據updateAvoidanceModeState()來開關  與 ENABLE_FLIGHT_MODE(AVOIDANCE_MODE); 無關..
+		updateAvoidanceModeState(true);
+		ENABLE_FLIGHT_MODE(AVOIDANCE_MODE);
+	}
+	else {
+		updateAvoidanceModeState(false);
+		DISABLE_FLIGHT_MODE(AVOIDANCE_MODE);
+	}
+
+	//extend nav func (surroundAB)
+	if (FLIGHT_MODE(NAV_POSHOLD_MODE))
+	{
+		//TODO: surroundAB Mode
+		if (IS_RC_MODE_ACTIVE(BOXSURROUND_AB))
+		{
+			if (!FLIGHT_MODE(SURROUND_AB_MODE)) {
+				ENABLE_FLIGHT_MODE(SURROUND_AB_MODE);
+			}
+		}
+		else
+		{
+			DISABLE_FLIGHT_MODE(SURROUND_AB_MODE);
+		}
+		//TODO: Set POS A/B
+		if (IS_RC_MODE_ACTIVE(BOXSAVEPOS_A))
+		{
+			navWaypoint_t msp_wp;
+			getWaypoint(255, &msp_wp);
+            setWaypoint(NAV_EXTEND_WAYPOINT_POSITION_A, &msp_wp);
+		}
+		if (IS_RC_MODE_ACTIVE(BOXSAVEPOS_B))
+		{
+			navWaypoint_t msp_wp;
+			getWaypoint(255, &msp_wp);
+			setWaypoint(NAV_EXTEND_WAYPOINT_POSITION_B, &msp_wp);
+		}
+	}
+
 
 	//TODO: mclaunch Mode 
 	// used arm kill switch and althold mode
@@ -738,6 +779,12 @@ void taskMainPidLoop(timeUs_t currentTimeUs)
 #if defined(NAV)
     updatePositionEstimator();
     applyWaypointNavigationAndAltitudeHold();
+
+	//TODO: surround mode
+	if (FLIGHT_MODE(SURROUND_AB_MODE))
+	{
+		updateSurroundModeDesiredPosition();
+	}
 #endif
 
 #ifdef TOFR

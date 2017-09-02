@@ -141,8 +141,11 @@ static const box_t boxes[CHECKBOX_ITEM_COUNT + 1] = {
     { BOXNAVLAUNCH, "NAV LAUNCH;", 36 },
     { BOXAUTOTRIM, "SERVO AUTOTRIM;", 37 },
     { BOXKILLSWITCH, "KILLSWITCH;", 38 },
-    { BOXAVOIDANCE, "AVOIDANCE;", 39 },
-    { BOXMCLAUNCH, "MC LAUNCH;", 40 },
+	{ BOXAVOIDANCE, "AVOIDANCE;", 39 },
+	{ BOXMCLAUNCH, "MC LAUNCH;", 40 },
+	{ BOXSAVEPOS_A, "SAVEPOS_A;", 41 },
+	{ BOXSAVEPOS_B, "SAVEPOS_B;", 42 },
+	{ BOXSURROUND_AB, "SURROUND_AB;", 43 },
     { CHECKBOX_ITEM_COUNT, NULL, 0xFF }
 };
 
@@ -2061,13 +2064,31 @@ static mspResult_e mspFcProcessInCommand(uint8_t cmdMSP, sbuf_t *src)
         }
         break;
 
-    case MSP_WP_MISSION_SAVE:
-        sbufReadU8(src);    // Mission ID (reserved)
-        if (!saveNonVolatileWaypointList()) {
-            return MSP_RESULT_ERROR;
-        }
-        break;
+	case MSP_WP_MISSION_SAVE:
+		sbufReadU8(src);    // Mission ID (reserved)
+		if (!saveNonVolatileWaypointList()) {
+			return MSP_RESULT_ERROR;
+		}
+		break;
 #endif
+
+		//extend method head
+	case MSP_EXTEND:
+		{
+			const uint8_t extend_method_index = sbufReadU8(src);     // get the extend method index
+			switch (extend_method_index)
+			{
+			case MSP_EXTEND_NAV_FOLLOW:
+
+				break;
+			case MSP_EXTEND_NAV_SURROUND:
+
+				break;
+			default:
+				return MSP_RESULT_ERROR;
+			}
+		}
+		break;
 
     default:
         return MSP_RESULT_ERROR;

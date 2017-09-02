@@ -62,6 +62,7 @@ typedef enum {
 #endif
 	AVOIDANCE_MODE = (1 << 16),
 	MC_LAUNCH_MODE = (1 << 17),
+	SURROUND_AB_MODE = (1 << 18),
 } flightModeFlags_e;
 
 extern uint32_t flightModeFlags;

@@ -855,6 +855,9 @@
     <ClCompile Include="rx\eleres.c">
       <Filter>原始程式檔</Filter>
     </ClCompile>
+    <ClCompile Include="xf\navigation\navigation_extend.c">
+      <Filter>原始程式檔</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="drivers\logging_codes.h">
@@ -1677,6 +1680,9 @@
       <Filter>標頭檔</Filter>
     </ClInclude>
     <ClInclude Include="rx\eleres.h">
+      <Filter>標頭檔</Filter>
+    </ClInclude>
+    <ClInclude Include="xf\navigation\navigation_extend.h">
       <Filter>標頭檔</Filter>
     </ClInclude>
   </ItemGroup>
