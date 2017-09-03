@@ -515,33 +515,31 @@ void processRx(timeUs_t currentTimeUs)
 	}
 
 	//extend nav func (surroundAB)
-	if (FLIGHT_MODE(NAV_POSHOLD_MODE))
+	//TODO: surroundAB Mode
+	if (IS_RC_MODE_ACTIVE(BOXSURROUND_AB))
 	{
-		//TODO: surroundAB Mode
-		if (IS_RC_MODE_ACTIVE(BOXSURROUND_AB))
-		{
-			if (!FLIGHT_MODE(SURROUND_AB_MODE)) {
-				ENABLE_FLIGHT_MODE(SURROUND_AB_MODE);
-			}
-		}
-		else
-		{
-			DISABLE_FLIGHT_MODE(SURROUND_AB_MODE);
-		}
-		//TODO: Set POS A/B
-		if (IS_RC_MODE_ACTIVE(BOXSAVEPOS_A))
-		{
-			navWaypoint_t msp_wp;
-			getWaypoint(255, &msp_wp);
-            setWaypoint(NAV_EXTEND_WAYPOINT_POSITION_A, &msp_wp);
-		}
-		if (IS_RC_MODE_ACTIVE(BOXSAVEPOS_B))
-		{
-			navWaypoint_t msp_wp;
-			getWaypoint(255, &msp_wp);
-			setWaypoint(NAV_EXTEND_WAYPOINT_POSITION_B, &msp_wp);
+		if (!FLIGHT_MODE(SURROUND_AB_MODE)) {
+			ENABLE_FLIGHT_MODE(SURROUND_AB_MODE);
 		}
 	}
+	else
+	{
+		DISABLE_FLIGHT_MODE(SURROUND_AB_MODE);
+	}
+	//TODO: Set POS A/B
+	if (IS_RC_MODE_ACTIVE(BOXSAVEPOS_A))
+	{
+		navWaypoint_t msp_wp;
+		getWaypoint(255, &msp_wp);
+        setWaypoint(NAV_EXTEND_WAYPOINT_POSITION_A, &msp_wp);
+	}
+	if (IS_RC_MODE_ACTIVE(BOXSAVEPOS_B))
+	{
+		navWaypoint_t msp_wp;
+		getWaypoint(255, &msp_wp);
+		setWaypoint(NAV_EXTEND_WAYPOINT_POSITION_B, &msp_wp);
+	}
+	
 
 
 	//TODO: mclaunch Mode 
@@ -778,13 +776,12 @@ void taskMainPidLoop(timeUs_t currentTimeUs)
 
 #if defined(NAV)
     updatePositionEstimator();
-    applyWaypointNavigationAndAltitudeHold();
 
 	//TODO: surround mode
-	if (FLIGHT_MODE(SURROUND_AB_MODE))
-	{
-		updateSurroundModeDesiredPosition();
-	}
+	updateSurroundModeDesiredPosition();
+    
+	applyWaypointNavigationAndAltitudeHold();
+
 #endif
 
 #ifdef TOFR

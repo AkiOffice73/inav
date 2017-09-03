@@ -47,14 +47,14 @@ typedef enum {
     BOXSURFACE      = 24,
     BOXFLAPERON     = 25,
     BOXTURNASSIST   = 26,
-    BOXAUTOTRIM     = 27,
-    BOXAUTOTUNE     = 28,
-    BOXAVOIDANCE    = 29,
-    BOXMCLAUNCH     = 30,
-
-	BOXSAVEPOS_A    = 31,  //waypoint 201
-	BOXSAVEPOS_B    = 32,  //waypoint 202
-	BOXSURROUND_AB  = 33,  //center = waypoint201    start = waypoint202
+	//TODO 32bit不足以供應目前新增的模式,應修改架構
+	BOXSAVEPOS_A = 27,  //waypoint 201
+	BOXSAVEPOS_B = 28,  //waypoint 202
+	BOXSURROUND_AB = 29,  //center = waypoint201    start = waypoint202
+	BOXAUTOTRIM     = 30, //27
+    BOXAUTOTUNE     = 31, //28
+    BOXAVOIDANCE    = 32,  //29
+    BOXMCLAUNCH     = 33,
 	CHECKBOX_ITEM_COUNT
 } boxId_e;
 
