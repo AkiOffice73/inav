@@ -493,26 +493,26 @@ void processRx(timeUs_t currentTimeUs)
         if (IS_RC_MODE_ACTIVE(BOXHEADADJ)) {
             headFreeModeHold = DECIDEGREES_TO_DEGREES(attitude.values.yaw); // acquire new heading
 			//TODO #20160901%phis105 暫時用重設無頭模式航向的功能來開關避障(rcModeIsActive(BOXHEADADJ) = avoidance Enable)
-			//updateAvoidanceModeState(true);
+			updateAvoidanceModeState(true);
 			//ENABLE_FLIGHT_MODE(AVOIDANCE_MODE);
 		} else {
 			//TODO #20160901%phis105 暫時用重設無頭模式航向的功能來開關避障(rcModeIsActive(BOXHEADADJ) = avoidance Enable)
-			//updateAvoidanceModeState(false);
+			updateAvoidanceModeState(false);
 			//DISABLE_FLIGHT_MODE(AVOIDANCE_MODE);
 		}
     }
 #endif
 
-	//Avoidance Mode
-	if (IS_RC_MODE_ACTIVE(BOXAVOIDANCE)) {
-		//TODO: 目前避撞模式是依據updateAvoidanceModeState()來開關  與 ENABLE_FLIGHT_MODE(AVOIDANCE_MODE); 無關..
-		updateAvoidanceModeState(true);
-		ENABLE_FLIGHT_MODE(AVOIDANCE_MODE);
-	}
-	else {
-		updateAvoidanceModeState(false);
-		DISABLE_FLIGHT_MODE(AVOIDANCE_MODE);
-	}
+	////Avoidance Mode   *BOX模式開關數量已達上限32項
+	//if (IS_RC_MODE_ACTIVE(BOXAVOIDANCE)) {
+	//	//TODO: 目前避撞模式是依據updateAvoidanceModeState()來開關  與 ENABLE_FLIGHT_MODE(AVOIDANCE_MODE); 無關..
+	//	updateAvoidanceModeState(true);
+	//	ENABLE_FLIGHT_MODE(AVOIDANCE_MODE);
+	//}
+	//else {
+	//	updateAvoidanceModeState(false);
+	//	DISABLE_FLIGHT_MODE(AVOIDANCE_MODE);
+	//}
 
 	//extend nav func (surroundAB)
 	//TODO: surroundAB Mode

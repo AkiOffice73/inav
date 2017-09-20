@@ -51,10 +51,10 @@ typedef enum {
 	BOXSAVEPOS_A = 27,  //waypoint 201
 	BOXSAVEPOS_B = 28,  //waypoint 202
 	BOXSURROUND_AB = 29,  //center = waypoint201    start = waypoint202
-	BOXAUTOTRIM     = 30, //27
+	BOXMCLAUNCH		= 30, //
     BOXAUTOTUNE     = 31, //28
     BOXAVOIDANCE    = 32,  //29
-    BOXMCLAUNCH     = 33,
+	BOXAUTOTRIM		= 33, //27
 	CHECKBOX_ITEM_COUNT
 } boxId_e;
 
